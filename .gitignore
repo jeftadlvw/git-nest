@@ -1,0 +1,11 @@
+# coding environments
+.idea
+.vs
+.vscode
+.fleet
+
+# .env
+*.env
+
+# MacOS
+.DS_STORE
