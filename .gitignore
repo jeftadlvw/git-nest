@@ -9,3 +9,10 @@
 
 # MacOS
 .DS_STORE
+
+# shell environments
+.devbox
+devbox.lock
+
+# artifacts
+build
