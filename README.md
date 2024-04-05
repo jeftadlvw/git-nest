@@ -60,6 +60,11 @@ In order to develop *git-nest* without a wrapped shell environment you are requi
 ### Supported Go versions
 As of current development, `go-1.22` is required to build the source code.
 
+### Makefile targets
+- `build` (default): build the project
+- `git-test`: test git integration
+- `root-dir`: echo project root directory concatenated by make
+
 
 ## Contributing
 Reviewing and accepting contributions is temporarily suspended until the project's foundation is established. More information will follow soon.
