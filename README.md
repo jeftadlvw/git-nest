@@ -1,6 +1,6 @@
 # git-nest
 
-**git-nest** is a _git_ command line extension for nesting external repositories in your project without your parent repository noticing, using native features and configurations files.
+**git-nest** is a _git_ command line extension for nesting external repositories in your project without your parent repository noticing.
 
 
 > This project is in early development.<br>
@@ -17,7 +17,7 @@ You should have the following requirements installed into your local environment
 
 `nix-shell`, `devbox shell` and ~~Docker~~ (not yet) are supported out-of-the-box too. More about the dependencies and shell environments can be found in [Development](#development).
 
-The building procedure is written inside the Makefile.
+The building procedure is defined as a Makefile target.
 
 ```shell
 make
