@@ -2,6 +2,7 @@ package constants
 
 import (
 	"strconv"
+	"strings"
 )
 
 /*
@@ -49,7 +50,7 @@ EphemeralBuild returns whether the compiled binary was created by `go run` or th
 The toolchain injects a value at compile time that toggles the binary to be non-ephemeral.
 */
 func EphemeralBuild() bool {
-	return ephemeralBuildStr != "false"
+	return strings.ToLower(ephemeralBuildStr) != "false" || ephemeralBuildStr != "0"
 }
 
 /*
