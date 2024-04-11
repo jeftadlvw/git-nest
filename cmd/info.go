@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/jeftadlvw/git-nest/internal"
 	"github.com/jeftadlvw/git-nest/internal/constants"
+	"github.com/jeftadlvw/git-nest/utils"
 	"github.com/spf13/cobra"
 	"runtime"
 	"strings"
@@ -11,13 +13,18 @@ import (
 
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Various information (useful for debugging)",
+	Short: "Print various debug information",
 	Run: func(cmd *cobra.Command, args []string) {
-		printCompilationInformation()
+		printDebugInformation()
 	},
 }
 
-func printCompilationInformation() {
+func printDebugInformation() {
+	err := internal.EvaluateContext()
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	// beautify compilation time output
 	compilationTime := "unknown"
 	if constants.CompilationTimestamp() != -1 {
@@ -25,15 +32,25 @@ func printCompilationInformation() {
 		compilationTime = time.Unix(int64(constants.CompilationTimestamp()), 0).Format(layout)
 	}
 
-	fmt.Printf("%s info dump:\n", constants.ApplicationName)
-	fmt.Printf("  Version:\t%s\n", constants.Version())
-	fmt.Printf("  Git ref:\t%s\n", constants.RefHash())
-	fmt.Printf("  Runtime:\t%s\n", runtime.Version())
-	fmt.Printf("  Built:\t%s\n", compilationTime)
-	fmt.Printf("  OS/Arch:\t%s/%s\n", runtime.GOOS, runtime.GOARCH)
+	infoMap := map[string]interface{}{
+		"Binary": map[string]interface{}{
+			"Version": constants.Version(),
+			"Git ref": constants.RefHash(),
+			"Runtime": runtime.Version(),
+			"Built":   compilationTime,
+			"OS/Arch": fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
+		},
+		"Context": map[string]interface{}{
+			"Working directory":  constants.Context.WorkingDirectory,
+			"Root directory":     constants.Context.ProjectRoot,
+			"Configuration file": constants.Context.ConfigFile,
+		},
+	}
+
+	fmt.Printf(utils.FmtMapTree(infoMap, ""))
 
 	// estimate if binary is local dev build
 	if strings.HasPrefix(constants.Version(), "[") || constants.RefHash() == "unset" || constants.CompilationTimestamp() == -1 {
-		fmt.Printf("\nThis binary is most likely a local development build.\n")
+		fmt.Printf("This binary is most likely a local development built.\n")
 	}
 }
