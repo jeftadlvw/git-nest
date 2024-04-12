@@ -4,10 +4,6 @@ package models
 NestContext bundles all relevant information of a project that utilizes git-nest.
 */
 type NestContext struct {
-	/*
-		Config is the configuration of the project.
-	*/
-	Config NestConfig
 
 	/*
 		WorkingDirectory contains the Path to the working directory the binary was executed from.
@@ -25,9 +21,29 @@ type NestContext struct {
 	ProjectRoot Path
 
 	/*
+		ConfigFileExists defines whether a `nestmodules.toml` configuration file exists.
+	*/
+	ConfigFileExists bool
+
+	/*
 		ConfigFile is a Path that points to the project's `nestmodules.toml`.
 
 		If no configuration files has found, it points to `[ProjectRoot]/nestmodules.toml`.
 	*/
 	ConfigFile Path
+
+	/*
+		Config contains the configuration of the project, read from a configuration file.
+	*/
+	Config NestConfig
+
+	/*
+		IsGitInstalled defines whether git is installed in the current environment.
+	*/
+	IsGitInstalled bool
+
+	/*
+		IsGitProject defines whether the project root is also a git repository.
+	*/
+	IsGitProject bool
 }
