@@ -1,8 +1,9 @@
 package models
 
 type Config struct {
-	IgnoreDuplicateOrigins    bool
-	IgnoreDuplicateOriginRefs bool
+	AllowDuplicateOrigins    bool
+	AllowDuplicateOriginRefs bool
+	AllowUnequalRoots        bool
 }
 
 func (c Config) Validate() error {

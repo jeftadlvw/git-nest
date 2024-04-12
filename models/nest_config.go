@@ -54,7 +54,7 @@ func (c NestConfig) Validate() error {
 		// check if Submodules have duplicate remote origin urls
 		submoduleRemoteUrl := submodule.Url.String()
 		added = remoteUrlSet.Add(submoduleRemoteUrl)
-		if !added && !c.Config.IgnoreDuplicateOrigins && !duplicateOriginUrlSet.Contains(submoduleRemoteUrl) {
+		if !added && !c.Config.AllowDuplicateOrigins && !duplicateOriginUrlSet.Contains(submoduleRemoteUrl) {
 			_, _ = fmt.Fprintf(os.Stderr, "submodule origin url %s defined multiple times", submoduleRemoteUrl)
 			duplicateOriginUrlSet.Add(submoduleRemoteUrl)
 		}
@@ -62,7 +62,7 @@ func (c NestConfig) Validate() error {
 		// check if duplicate submodule is nested multiple times (but different directories)
 		submoduleRemoteIdentifier := submodule.Identifier()
 		added = remoteIdentifierSet.Add(submoduleRemoteIdentifier)
-		if !added && !c.Config.IgnoreDuplicateOriginRefs && !duplicateOriginSet.Contains(submoduleRemoteIdentifier) {
+		if !added && !c.Config.AllowDuplicateOriginRefs && !duplicateOriginSet.Contains(submoduleRemoteIdentifier) {
 			_, _ = fmt.Fprintf(os.Stderr, "submodule origin %s defined multiple times", submoduleRemoteIdentifier)
 			duplicateOriginSet.Add(submoduleRemoteIdentifier)
 		}
