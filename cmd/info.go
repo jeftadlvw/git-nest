@@ -23,6 +23,7 @@ func printDebugInformation() {
 	err := internal.EvaluateContext()
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	// beautify compilation time output
@@ -30,6 +31,21 @@ func printDebugInformation() {
 	if constants.CompilationTimestamp() != -1 {
 		layout := "Mon Jan 02 15:04:05 2006"
 		compilationTime = time.Unix(int64(constants.CompilationTimestamp()), 0).Format(layout)
+	}
+
+	configurationFileString := ""
+	if constants.Context.ConfigFileExists {
+		configurationFileString = string(constants.Context.ConfigFile)
+	} else {
+		configurationFileString = "none"
+	}
+
+	gitInstalledString := fmt.Sprintf("%t", constants.Context.IsGitInstalled)
+	if constants.Context.IsGitInstalled {
+		gitVersion, err := utils.GetGitVersion()
+		if err == nil {
+			gitInstalledString = fmt.Sprintf("%s; %s", gitInstalledString, gitVersion)
+		}
 	}
 
 	infoMap := map[string]interface{}{
@@ -43,7 +59,9 @@ func printDebugInformation() {
 		"Context": map[string]interface{}{
 			"Working directory":  constants.Context.WorkingDirectory,
 			"Root directory":     constants.Context.ProjectRoot,
-			"Configuration file": constants.Context.ConfigFile,
+			"Configuration file": configurationFileString,
+			"Git installed":      gitInstalledString,
+			"Git project":        constants.Context.IsGitProject,
 		},
 	}
 
