@@ -20,7 +20,7 @@ var infoCmd = &cobra.Command{
 }
 
 func printDebugInformation() {
-	err := internal.EvaluateContext()
+	context, err := internal.EvaluateContext()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -34,14 +34,14 @@ func printDebugInformation() {
 	}
 
 	configurationFileString := ""
-	if constants.Context.ConfigFileExists {
-		configurationFileString = string(constants.Context.ConfigFile)
+	if context.ConfigFileExists {
+		configurationFileString = string(context.ConfigFile)
 	} else {
 		configurationFileString = "none"
 	}
 
-	gitInstalledString := fmt.Sprintf("%t", constants.Context.IsGitInstalled)
-	if constants.Context.IsGitInstalled {
+	gitInstalledString := fmt.Sprintf("%t", context.IsGitInstalled)
+	if context.IsGitInstalled {
 		gitVersion, err := utils.GetGitVersion()
 		if err == nil {
 			gitInstalledString = fmt.Sprintf("%s; %s", gitInstalledString, gitVersion)
@@ -57,11 +57,11 @@ func printDebugInformation() {
 			"OS/Arch": fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
 		},
 		"Context": map[string]interface{}{
-			"Working directory":  constants.Context.WorkingDirectory,
-			"Root directory":     constants.Context.ProjectRoot,
+			"Working directory":  context.WorkingDirectory,
+			"Root directory":     context.ProjectRoot,
 			"Configuration file": configurationFileString,
 			"Git installed":      gitInstalledString,
-			"Git project":        constants.Context.IsGitProject,
+			"Git project":        context.IsGitProject,
 		},
 	}
 

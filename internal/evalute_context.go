@@ -13,9 +13,9 @@ import (
 )
 
 /*
-EvaluateContext evaluates the runtime context and writes it into constants.Context.
+EvaluateContext returns a fresh evaluated models.NestContext.
 */
-func EvaluateContext() error {
+func EvaluateContext() (models.NestContext, error) {
 
 	var (
 		cwd              models.Path
@@ -28,10 +28,12 @@ func EvaluateContext() error {
 		isGitProject     bool
 	)
 
+	nestContext := models.NestContext{}
+
 	// get cwd
 	cwdStr, err := os.Getwd()
 	if err != nil {
-		return err
+		return nestContext, err
 	}
 	cwd = models.Path(cwdStr)
 
@@ -44,7 +46,7 @@ func EvaluateContext() error {
 	// evaluate configuration file path
 	configFilePath = evaluateConfigFileFromProjectRoot(projectRoot)
 	if configFilePath.IsDir() {
-		return fmt.Errorf("configuration path to %s is a directory", configFilePath.String())
+		return nestContext, fmt.Errorf("configuration path to %s is a directory", configFilePath.String())
 	}
 
 	// read configuration file
@@ -60,7 +62,7 @@ func EvaluateContext() error {
 	if configFileExists {
 		err = conversions.PopulateNestConfigFromToml(&nestConfig, configStr)
 		if err != nil {
-			return err
+			return nestContext, err
 		}
 	}
 
@@ -81,15 +83,15 @@ func EvaluateContext() error {
 		}
 	}
 
-	constants.Context.WorkingDirectory = cwd
-	constants.Context.ProjectRoot = projectRoot
-	constants.Context.ConfigFileExists = configFileExists
-	constants.Context.ConfigFile = configFilePath
-	constants.Context.Config = nestConfig
-	constants.Context.IsGitInstalled = IsGitInstalled
-	constants.Context.IsGitProject = isGitProject
+	nestContext.WorkingDirectory = cwd
+	nestContext.ProjectRoot = projectRoot
+	nestContext.ConfigFileExists = configFileExists
+	nestContext.ConfigFile = configFilePath
+	nestContext.Config = nestConfig
+	nestContext.IsGitInstalled = IsGitInstalled
+	nestContext.IsGitProject = isGitProject
 
-	return nil
+	return nestContext, nil
 }
 
 func evaluateConfigFileFromProjectRoot(root models.Path) models.Path {
