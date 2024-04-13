@@ -2,8 +2,10 @@ package io
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/jeftadlvw/git-nest/models"
-	template2 "html/template"
+	"strings"
+	"text/template"
 )
 
 const startString string = "# git-nest configuration start"
@@ -16,11 +18,11 @@ const excludeTemplate string = `# This part influences how git handles nested mo
 {{- end }}`
 
 // TODO extract git-nest configuration part location from .git/info/exclude and override it with new configuration
-func FmtSubmodulesGitIgnore(submodules []models.Submodule) string {
+func FmtSubmodulesGitExclude(submodules []models.Submodule) string {
 	buffer := bytes.NewBufferString("")
 
-	template := template2.Must(template2.New("exclude").Parse(excludeTemplate))
-	err := template.Execute(buffer, submodules)
+	t := template.Must(template.New("exclude").Parse(excludeTemplate))
+	err := t.Execute(buffer, submodules)
 	if err != nil {
 		return ""
 	}
