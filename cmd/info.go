@@ -48,24 +48,24 @@ func printDebugInformation() {
 		}
 	}
 
-	infoMap := map[string]interface{}{
-		"Binary": map[string]interface{}{
-			"Version": constants.Version(),
-			"Git ref": constants.RefHash(),
-			"Runtime": runtime.Version(),
-			"Built":   compilationTime,
-			"OS/Arch": fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
-		},
-		"Context": map[string]interface{}{
-			"Working directory":  context.WorkingDirectory,
-			"Root directory":     context.ProjectRoot,
-			"Configuration file": configurationFileString,
-			"Git installed":      gitInstalledString,
-			"Git project":        context.IsGitProject,
-		},
+	infoMap := []utils.Node{
+		{"Binary", []utils.Node{
+			{"Version", constants.Version()},
+			{"Git ref", constants.RefHash()},
+			{"Runtime", runtime.Version()},
+			{"Build", compilationTime},
+			{"OS/Arch", fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)},
+		}},
+		{"Context", []utils.Node{
+			{"Working directory", context.WorkingDirectory},
+			{"Root directory", context.ProjectRoot},
+			{"Configuration file", configurationFileString},
+			{"Git installed", gitInstalledString},
+			{"Git project", context.IsGitProject},
+		}},
 	}
 
-	fmt.Printf(utils.FmtMapTree(infoMap, ""))
+	fmt.Printf(utils.FmtTree("", infoMap...))
 
 	// estimate if binary is local dev build
 	if strings.HasPrefix(constants.Version(), "[") || constants.RefHash() == "unset" || constants.CompilationTimestamp() == -1 {
