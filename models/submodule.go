@@ -8,10 +8,9 @@ import (
 )
 
 type Submodule struct {
-	Path   Path
-	Url    HttpUrl
-	Ref    string
-	Exists bool
+	Path Path
+	Url  HttpUrl
+	Ref  string
 }
 
 /*
@@ -74,7 +73,6 @@ func (s *Submodule) Validate() error {
 		return fmt.Errorf("submodule path escapes root directory (%s)", s.Path)
 	}
 
-	// TODO validate s.Ref: may be empty, else no spaces
 	if strings.Contains(s.Ref, " ") {
 		return fmt.Errorf("submodule ref contains spaces (%s)", s.Ref)
 	}
