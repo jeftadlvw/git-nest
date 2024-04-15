@@ -61,7 +61,8 @@ func printDebugInformation() {
 			{"Root directory", context.ProjectRoot},
 			{"Configuration file", configurationFileString},
 			{"Git installed", gitInstalledString},
-			{"Git project", context.IsGitProject},
+			{"Git repository", context.IsGitRepository},
+			{"Repository root", context.GitRepositoryRoot},
 		}},
 	}
 
