@@ -3,9 +3,7 @@ package internal
 import (
 	"errors"
 	"fmt"
-	"github.com/jeftadlvw/git-nest/conversions"
 	"github.com/jeftadlvw/git-nest/internal/constants"
-	"github.com/jeftadlvw/git-nest/io"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/utils"
 	"os"
@@ -13,9 +11,9 @@ import (
 )
 
 /*
-EvaluateContext returns a fresh evaluated models.NestContext.
+CreateContext returns a fresh evaluated models.NestContext.
 */
-func EvaluateContext() (models.NestContext, error) {
+func CreateContext() (models.NestContext, error) {
 
 	var (
 		cwd              models.Path
@@ -51,7 +49,7 @@ func EvaluateContext() (models.NestContext, error) {
 
 	// read configuration file
 	configFileExists = false
-	configStr, err := io.ReadFileToStr(configFilePath)
+	configStr, err := utils.ReadFileToStr(configFilePath)
 	if err == nil {
 		configFileExists = true
 	}
@@ -60,7 +58,7 @@ func EvaluateContext() (models.NestContext, error) {
 	// else nestConfig is an empty configuration
 	nestConfig = models.NestConfig{}
 	if configFileExists {
-		err = conversions.PopulateNestConfigFromToml(&nestConfig, configStr)
+		err = PopulateNestConfigFromToml(&nestConfig, configStr)
 		if err != nil {
 			return nestContext, err
 		}
@@ -89,7 +87,8 @@ func EvaluateContext() (models.NestContext, error) {
 	nestContext.ConfigFile = configFilePath
 	nestContext.Config = nestConfig
 	nestContext.IsGitInstalled = IsGitInstalled
-	nestContext.IsGitProject = isGitProject
+	nestContext.IsGitRepository = isGitProject
+	nestContext.GitRepositoryRoot = gitRoot
 
 	return nestContext, nil
 }
