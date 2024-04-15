@@ -21,6 +21,11 @@ type NestContext struct {
 	ProjectRoot Path
 
 	/*
+		GitRepositoryPath is a Path to the project's repository root
+	*/
+	GitRepositoryRoot Path
+
+	/*
 		ConfigFileExists defines whether a `nestmodules.toml` configuration file exists.
 	*/
 	ConfigFileExists bool
@@ -43,7 +48,7 @@ type NestContext struct {
 	IsGitInstalled bool
 
 	/*
-		IsGitProject defines whether the project root is also a git repository.
+		IsGitRepository defines whether the project root is also a git repository.
 	*/
-	IsGitProject bool
+	IsGitRepository bool
 }
