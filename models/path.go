@@ -73,8 +73,23 @@ EmptyOrAtRoot returns whether this Path is an empty string, at a root-level-dire
 or at its top-most parent directory of its original path.
 */
 func (p *Path) EmptyOrAtRoot() bool {
+	return p.Empty() || p.AtRoot()
+}
+
+/*
+Empty returns whether this Path is an empty string.
+*/
+func (p *Path) Empty() bool {
+	return p.String() == ""
+}
+
+/*
+AtRoot returns whether this Path is at a root-level-directory or at its top-most
+parent directory of its original path.
+*/
+func (p *Path) AtRoot() bool {
 	s := string(*p)
-	return s == "/" || s == "." || s == ".." || s == ""
+	return s == "/" || s == "." || s == ".."
 }
 
 /*
@@ -85,9 +100,22 @@ func (p *Path) Base() Path {
 }
 
 /*
-Join returns a new Path with all passed subpaths joined together using filepath.Join.
+Join returns a new Path with all passed Path structs joined together using filepath.Join.
+If strings should be joined on this Path, use SJoin.
 */
-func (p *Path) Join(paths ...string) Path {
+func (p *Path) Join(paths ...Path) Path {
+	pathsStr := make([]string, len(paths))
+	for i, path := range paths {
+		pathsStr[i] = string(path)
+	}
+
+	return Path(filepath.Join(append([]string{string(*p)}, pathsStr...)...))
+}
+
+/*
+SJoin returns a new Path with all passed strings joined together using filepath.Join.
+*/
+func (p *Path) SJoin(paths ...string) Path {
 	return Path(filepath.Join(append([]string{string(*p)}, paths...)...))
 }
 

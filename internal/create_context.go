@@ -95,8 +95,8 @@ func CreateContext() (models.NestContext, error) {
 
 func evaluateConfigFileFromProjectRoot(root models.Path) models.Path {
 	if root.BContains(constants.ConfigSubDirFileName) {
-		return root.Join(constants.ConfigSubDirFileName)
+		return root.SJoin(constants.ConfigSubDirFileName)
 	}
 
-	return root.Join(constants.ConfigFileName)
+	return root.SJoin(constants.ConfigFileName)
 }

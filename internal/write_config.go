@@ -22,7 +22,7 @@ func WriteConfig(c models.NestContext) {
 
 	// write to git_exclude if project is a git repository
 	if c.IsGitRepository {
-		_ = WriteGitExclude(c.GitRepositoryRoot.Join(gitExcludeFile), c.Config.Submodules)
+		_ = WriteGitExclude(c.GitRepositoryRoot.SJoin(gitExcludeFile), c.Config.Submodules)
 	}
 
 	// write to git-nest configuration file
