@@ -2,12 +2,13 @@ package utils
 
 import (
 	"errors"
+	"github.com/jeftadlvw/git-nest/models"
 	"os/exec"
 	"strings"
 )
 
-func FindGitRoot() (string, error) {
-	path, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
+func GetGitRemoteUrl(d models.Path) (string, error) {
+	path, err := RunCommand(d, "git", "rev-parse", "--show-toplevel")
 	if err != nil {
 		return "", err
 	}
