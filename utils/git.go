@@ -13,14 +13,36 @@ func GetGitRemoteUrl(d models.Path) (string, error) {
 		return "", err
 	}
 
-	pathStr := string(path)
-	pathStr = strings.TrimSpace(pathStr)
-
-	if strings.HasPrefix(pathStr, "fatal:") {
+	if strings.HasPrefix(path, "fatal:") {
 		return "", errors.New("git root not found")
 	}
 
-	return pathStr, nil
+	return path, nil
+}
+
+func GetGitFetchHead(d models.Path) ([]string, error) {
+	longHead, err := RunCommand(d, "git", "rev-parse", "--verify", "HEAD")
+	if err != nil {
+		return nil, err
+	}
+
+	if strings.HasPrefix(longHead, "fatal:") {
+		return nil, errors.New("git root not found")
+	}
+
+	abbrevHead, err := RunCommand(d, "git", "rev-parse", "--abbref-rev", "HEAD")
+	if err != nil {
+		return nil, err
+	}
+
+	returnArr := []string{longHead}
+
+	if abbrevHead != "HEAD" {
+		returnArr = append(returnArr, longHead)
+		return returnArr, nil
+	}
+
+	return returnArr, nil
 }
 
 func GetGitVersion() (string, error) {
