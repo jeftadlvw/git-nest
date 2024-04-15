@@ -1,4 +1,4 @@
-package io
+package utils
 
 import (
 	"fmt"
@@ -20,4 +20,11 @@ func ReadFileToStr(path models.Path) (string, error) {
 	}
 
 	return string(bytes), nil
+}
+
+/*
+WriteStrToFile is a wrapper for os.WriteFile.
+*/
+func WriteStrToFile(path models.Path, str string) error {
+	return os.WriteFile(path.String(), []byte(str), 0644)
 }
