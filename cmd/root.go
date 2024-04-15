@@ -34,7 +34,7 @@ and configurations files.`,
 func configureRootCommand(rootCmd *cobra.Command) {
 	// add subcommands
 	rootCmd.AddCommand(versionCmd)
-	rootCmd.AddCommand(infoCmd)
+	rootCmd.AddCommand(createInfoCmd())
 
 	// miscellaneous configuration
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
