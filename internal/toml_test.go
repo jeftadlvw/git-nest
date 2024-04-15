@@ -1,4 +1,4 @@
-package conversions
+package internal
 
 import (
 	"fmt"
@@ -17,7 +17,6 @@ func TestPopulateNestConfigFromToml(t *testing.T) {
   ref = "branch, tag or commit"
 `
 	getNestConfig := models.NestConfig{}
-	// expectedNestConfig := models.NestConfig{}
 
 	err := PopulateNestConfigFromToml(&getNestConfig, inputString)
 	if err != nil {
@@ -41,7 +40,7 @@ func TestSubmoduleArrTomlStrFromNestConfig(t *testing.T) {
   path = ""
   url = "http://:0"`
 
-	getOutput := SubmoduleArrTomlStrFromNestConfig(nestConfig)
+	getOutput := SubmodulesToTomlConfig("  ", nestConfig.Submodules...)
 	if strings.TrimSpace(getOutput) != strings.TrimSpace(expectedOutput) {
 		t.Fatalf("\nExpected:\n%s\nActual:\n%s", expectedOutput, getOutput)
 	}

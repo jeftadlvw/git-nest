@@ -1,4 +1,4 @@
-package conversions
+package internal
 
 import (
 	"fmt"
@@ -16,17 +16,17 @@ func PopulateNestConfigFromToml(nestConfig *models.NestConfig, s string) error {
 	return nil
 }
 
-func SubmoduleArrTomlStrFromNestConfig(nestConfig models.NestConfig) string {
+func SubmodulesToTomlConfig(indent string, submodules ...models.Submodule) string {
 	var sb strings.Builder
-	for _, submodule := range nestConfig.Submodules {
-		sb.WriteString(SubmoduleTomlStr(submodule, "  "))
+	for _, submodule := range submodules {
+		sb.WriteString(SubmoduleToTomlConfig(submodule, indent))
 		sb.WriteString("\n")
 	}
 
 	return strings.TrimSpace(sb.String())
 }
 
-func SubmoduleTomlStr(s models.Submodule, indent string) string {
+func SubmoduleToTomlConfig(s models.Submodule, indent string) string {
 	var sb strings.Builder
 
 	sb.WriteString("[[submodule]]")
