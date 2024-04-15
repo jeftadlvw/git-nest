@@ -8,9 +8,10 @@ import (
 )
 
 type Submodule struct {
-	Path Path
-	Url  HttpUrl
-	Ref  string
+	Path   Path
+	Url    HttpUrl
+	Ref    string
+	Exists bool
 }
 
 /*

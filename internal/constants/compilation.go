@@ -10,7 +10,7 @@ Variable which values get injected by the `go build` compiler and the git-nest t
 */
 var (
 	version                 string
-	refHash                 string
+	ref                     string
 	compilationTimestampStr string
 	ephemeralBuildStr       string
 )
@@ -35,14 +35,14 @@ func Version() string {
 }
 
 /*
-RefHash returns the version control location from which the binary was build on. 'unset' in case
+Ref returns the version control location from which the binary was build on. 'unset' in case
 it was not injected during `go build`, else the injected value.
 */
-func RefHash() string {
-	if refHash == "" {
+func Ref() string {
+	if ref == "" {
 		return "unset"
 	}
-	return refHash
+	return ref
 }
 
 /*

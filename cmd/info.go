@@ -51,7 +51,7 @@ func printDebugInformation() {
 	infoMap := []utils.Node{
 		{"Binary", []utils.Node{
 			{"Version", constants.Version()},
-			{"Git ref", constants.RefHash()},
+			{"Git ref", constants.Ref()},
 			{"Runtime", runtime.Version()},
 			{"Build", compilationTime},
 			{"OS/Arch", fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)},
@@ -69,7 +69,7 @@ func printDebugInformation() {
 	fmt.Printf(utils.FmtTree("", infoMap...))
 
 	// estimate if binary is local dev build
-	if strings.HasPrefix(constants.Version(), "[") || constants.RefHash() == "unset" || constants.CompilationTimestamp() == -1 {
+	if strings.HasPrefix(constants.Version(), "[") || constants.Ref() == "unset" || constants.CompilationTimestamp() == -1 {
 		fmt.Printf("This binary is most likely a local development built.\n")
 	}
 }
