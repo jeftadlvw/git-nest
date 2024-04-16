@@ -5,6 +5,44 @@ import (
 	"testing"
 )
 
+func TestSshUrlClean(t *testing.T) {
+	tests := []struct {
+		url      urls.SshUrl
+		expected urls.SshUrl
+	}{
+		{
+			url:      urls.SshUrl{Hostname: "  example.com  ", User: "  hello  ", Path: "  /path/to/resource  "},
+			expected: urls.SshUrl{Hostname: "example.com", User: "hello", Path: "/path/to/resource"}},
+		{
+			url:      urls.SshUrl{Hostname: "example.com", User: "", Path: ""},
+			expected: urls.SshUrl{Hostname: "example.com", User: "", Path: "/"},
+		},
+		{
+			url:      urls.SshUrl{Hostname: "", User: "", Path: "path/to/resource"},
+			expected: urls.SshUrl{Hostname: "", User: "", Path: "/path/to/resource"},
+		},
+		{
+			url:      urls.SshUrl{Hostname: "example.com", User: "user", Path: "/path/to/resource/"},
+			expected: urls.SshUrl{Hostname: "example.com", User: "user", Path: "/path/to/resource"},
+		},
+	}
+
+	for _, tc := range tests {
+		tc.url.Clean()
+		if tc.url.Hostname != tc.expected.Hostname {
+			t.Errorf("Expected hostname >%s< in %v, got: >%s<", tc.expected.Hostname, tc.url, tc.url.Hostname)
+		}
+
+		if tc.url.User != tc.expected.User {
+			t.Errorf("Expected user >%s< in %v, got: >%s<", tc.expected.User, tc.url, tc.url.Path)
+		}
+
+		if tc.url.Path != tc.expected.Path {
+			t.Errorf("Expected path >%s< in %v, got: >%s<", tc.expected.Path, tc.url, tc.url.Path)
+		}
+	}
+}
+
 func TestSshUrlIsEmpty(t *testing.T) {
 	cases := []struct {
 		url   urls.SshUrl
@@ -24,6 +62,28 @@ func TestSshUrlIsEmpty(t *testing.T) {
 	}
 }
 
+func TestSshUrlHostPathConcat(t *testing.T) {
+	cases := []struct {
+		url      urls.SshUrl
+		expected string
+	}{
+		{urls.SshUrl{"", "", "/"}, ""},
+		{urls.SshUrl{"example.com", "", "/"}, ""},
+		{urls.SshUrl{"example.com", "user", "/"}, "example.com"},
+		{urls.SshUrl{"example.com", "user", "/"}, "example.com"},
+		{urls.SshUrl{"example.com", "user", "/hi"}, "example.com/hi"},
+		{urls.SshUrl{"example.com", "user", ":port"}, "example.com:port"},
+		{urls.SshUrl{"example.com", "user", ":port/path/"}, "example.com:port/path"},
+	}
+
+	for _, tc := range cases {
+		result := tc.url.HostPathConcat()
+		if result != tc.expected {
+			t.Errorf("HostPathConcat() for %v returned %s, expected %s", tc.url, result, tc.expected)
+		}
+	}
+}
+
 func TestSshUrlString(t *testing.T) {
 	cases := []struct {
 		url      urls.SshUrl
@@ -37,7 +97,7 @@ func TestSshUrlString(t *testing.T) {
 	for _, tc := range cases {
 		result := tc.url.String()
 		if result != tc.expected {
-			t.Errorf("String() for %v returned %s, expected %s", tc.url, result, tc.expected)
+			t.Errorf("String() for %v returned >%s<, expected >%s<", tc.url, result, tc.expected)
 		}
 	}
 }
@@ -48,12 +108,15 @@ func TestSshUrlUnmarshalText(t *testing.T) {
 		expected urls.SshUrl
 		err      bool
 	}{
-		{"user@example.com:path", urls.SshUrl{"example.com", "user", "path"}, false},
-		{"ssh://user@example.com:path", urls.SshUrl{"example.com", "user", "path"}, false},
-		{"ssh://user@example.com/path", urls.SshUrl{}, true},
+		{"user@example.com:port", urls.SshUrl{"example.com", "user", ":port"}, false},
+		{"ssh://user@example.com:port/path", urls.SshUrl{"example.com", "user", ":port/path"}, false},
+		{"ssh://user@example.com/path", urls.SshUrl{"example.com", "user", "/path"}, false},
+		{"ssh://user@example.com/path/to/resource", urls.SshUrl{"example.com", "user", "/path/to/resource"}, false},
 		{"invalid_url", urls.SshUrl{}, true},
 		{"", urls.SshUrl{}, true},
 		{"ssh://user_example.com", urls.SshUrl{}, true},
+		{"ssh://:path", urls.SshUrl{}, true},
+		{"ssh://:", urls.SshUrl{}, true},
 		{"ssh://user@example.com:path1:path2", urls.SshUrl{}, true},
 	}
 
@@ -98,9 +161,10 @@ func TestSshUrlFromString(t *testing.T) {
 		expected urls.SshUrl
 		err      bool
 	}{
-		{"user@example.com:path", urls.SshUrl{"example.com", "user", "path"}, false},
-		{"ssh://user@example.com:path", urls.SshUrl{"example.com", "user", "path"}, false},
-		{"ssh://user@example.com/path", urls.SshUrl{}, true},
+		{"user@example.com:port", urls.SshUrl{"example.com", "user", ":port"}, false},
+		{"ssh://user@example.com:port/path", urls.SshUrl{"example.com", "user", ":port/path"}, false},
+		{"ssh://user@example.com/path", urls.SshUrl{"example.com", "user", "/path"}, false},
+		{"ssh://user@example.com/path/to/resource", urls.SshUrl{"example.com", "user", "/path/to/resource"}, false},
 		{"invalid_url", urls.SshUrl{}, true},
 		{"", urls.SshUrl{}, true},
 		{"ssh://user_example.com", urls.SshUrl{}, true},
