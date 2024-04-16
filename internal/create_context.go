@@ -58,7 +58,7 @@ func CreateContext() (models.NestContext, error) {
 	// else nestConfig is an empty configuration
 	nestConfig = models.NestConfig{}
 	if configFileExists {
-		err = PopulateNestConfigFromToml(&nestConfig, configStr)
+		err = PopulateNestConfigFromToml(&nestConfig, configStr, false)
 		if err != nil {
 			return nestContext, err
 		}

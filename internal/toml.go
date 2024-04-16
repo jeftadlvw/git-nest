@@ -7,23 +7,18 @@ import (
 	"strings"
 )
 
-func PopulateNestConfigFromToml(nestConfig *models.NestConfig, s string) error {
-	_, err := toml.Decode(s, &nestConfig)
+func PopulateNestConfigFromToml(nestConfig *models.NestConfig, s string, strict bool) error {
+	md, err := toml.Decode(s, &nestConfig)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func SubmodulesToTomlConfig(indent string, submodules ...models.Submodule) string {
-	var sb strings.Builder
-	for _, submodule := range submodules {
-		sb.WriteString(SubmoduleToTomlConfig(submodule, indent))
-		sb.WriteString("\n")
+	undecoded := md.Undecoded()
+	if len(undecoded) != 0 && strict {
+		return fmt.Errorf("nest config contains undecoded keys: %q", undecoded)
 	}
 
-	return strings.TrimSpace(sb.String())
+	return nil
 }
 
 func SubmoduleToTomlConfig(s models.Submodule, indent string) string {
@@ -39,7 +34,17 @@ func SubmoduleToTomlConfig(s models.Submodule, indent string) string {
 		sb.WriteString(formatTomlKeyValue("ref", s.Ref, indent))
 	}
 
-	return sb.String()
+	return strings.TrimSpace(sb.String())
+}
+
+func SubmodulesToTomlConfig(indent string, submodules ...models.Submodule) string {
+	var sb strings.Builder
+	for _, submodule := range submodules {
+		sb.WriteString(SubmoduleToTomlConfig(submodule, indent))
+		sb.WriteString("\n\n")
+	}
+
+	return strings.TrimSpace(sb.String())
 }
 
 func formatTomlKeyValue(k string, v string, indent string) string {

@@ -3,12 +3,13 @@ package models
 import (
 	"fmt"
 	mapset "github.com/deckarep/golang-set/v2"
-	"os"
+	"path/filepath"
+	"strings"
 )
 
 type NestConfig struct {
-	Config     Config
-	Submodules []Submodule
+	Config     Config      `toml:"config"`
+	Submodules []Submodule `toml:"submodule"`
 }
 
 func (c NestConfig) Validate() error {
@@ -18,26 +19,31 @@ func (c NestConfig) Validate() error {
 	}
 
 	// validate each submodule
-	for _, submodule := range c.Submodules {
+	for index, submodule := range c.Submodules {
 		err = submodule.Validate()
 		if err != nil {
-			return fmt.Errorf("error at submodule %s@%s: %w", submodule.Url.String(), submodule.Ref, err)
+			return fmt.Errorf("error at submodule index %d: %w", index, err)
 		}
 	}
 
 	// check for duplicates
 	var (
-		identifierSet       = mapset.NewSet[string]()
-		pathSet             = mapset.NewSet[string]()
-		remoteUrlSet        = mapset.NewSet[string]()
-		remoteIdentifierSet = mapset.NewSet[string]()
-
-		duplicateOriginUrlSet = mapset.NewSet[string]()
-		duplicateOriginSet    = mapset.NewSet[string]()
+		identifierSet = mapset.NewSet[string]()
+		pathSet       = mapset.NewSet[string]()
+		remoteUrlSet  = mapset.NewSet[string]()
 	)
 
 	for _, submodule := range c.Submodules {
 		var added bool
+
+		// submodules may not escape project root (by having / or ../ as prefix)
+		if strings.HasPrefix(submodule.Path.String(), string(filepath.Separator)) {
+			return fmt.Errorf("submodule path is relative to project root")
+		}
+
+		if strings.Contains(submodule.Path.String(), string(filepath.Separator)) {
+			return fmt.Errorf("submodule path escapes project root (%s)", submodule.Path)
+		}
 
 		// check for 100% duplicates
 		added = identifierSet.Add(submodule.Identifier())
@@ -51,20 +57,13 @@ func (c NestConfig) Validate() error {
 			return fmt.Errorf("submodule directory %s used multiple times", submodule.Path)
 		}
 
-		// check if Submodules have duplicate remote origin urls
+		// check if submodules have duplicate remote origin urls
+		// it's enough to check for the url, because if AllowDuplicateOrigins is set to true,
+		// duplicate refs are automatically allowed too (no ref is a ref to something default!)
 		submoduleRemoteUrl := submodule.Url.String()
 		added = remoteUrlSet.Add(submoduleRemoteUrl)
-		if !added && !c.Config.AllowDuplicateOrigins && !duplicateOriginUrlSet.Contains(submoduleRemoteUrl) {
-			_, _ = fmt.Fprintf(os.Stderr, "submodule origin url %s defined multiple times", submoduleRemoteUrl)
-			duplicateOriginUrlSet.Add(submoduleRemoteUrl)
-		}
-
-		// check if duplicate submodule is nested multiple times (but different directories)
-		submoduleRemoteIdentifier := submodule.Identifier()
-		added = remoteIdentifierSet.Add(submoduleRemoteIdentifier)
-		if !added && !c.Config.AllowDuplicateOriginRefs && !duplicateOriginSet.Contains(submoduleRemoteIdentifier) {
-			_, _ = fmt.Fprintf(os.Stderr, "submodule origin %s defined multiple times", submoduleRemoteIdentifier)
-			duplicateOriginSet.Add(submoduleRemoteIdentifier)
+		if !added && !c.Config.AllowDuplicateOrigins {
+			return fmt.Errorf("submodule origin urls %s defined multiple times", submoduleRemoteUrl)
 		}
 	}
 

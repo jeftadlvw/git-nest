@@ -95,8 +95,8 @@ func (p *Path) AtRoot() bool {
 /*
 Base returns the last element of this Path, based on the stdlib filepath.Base.
 */
-func (p *Path) Base() Path {
-	return Path(filepath.Base(string(*p)))
+func (p *Path) Base() string {
+	return filepath.Base(string(*p))
 }
 
 /*

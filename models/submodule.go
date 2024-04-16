@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/jeftadlvw/git-nest/models/urls"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -9,22 +10,32 @@ import (
 
 type Submodule struct {
 	Path Path
-	Url  HttpUrl
+	Url  urls.HttpUrl
 	Ref  string
 }
 
 /*
-RemoteIdentifier returns a string to uniquely identify a submodule's remote origin.
+Clean performs a data cleanup on this Submodule.
+*/
+func (s *Submodule) Clean() {
+	s.Path = s.Path.Clean()
+	s.Ref = strings.TrimSpace(s.Ref)
+}
+
+/*
+RemoteIdentifier returns a string to uniquely identify a submodule's remote origin, incl. the reference.
 
 Format: Submodule.Url@Submodule.Ref
 */
 func (s *Submodule) RemoteIdentifier() string {
-	identifier := s.Url.Host()
+	s.Clean()
+
+	hostPathConcat := s.Url.HostPathConcat(true)
 	if s.Ref != "" {
-		identifier = identifier + "@" + s.Ref
+		hostPathConcat = hostPathConcat + "@" + s.Ref
 	}
 
-	return identifier
+	return hostPathConcat
 }
 
 /*
@@ -33,15 +44,17 @@ Identifier returns a string to uniquely identify a submodule.
 Format: Submodule.Url@Submodule.Ref>Submodule.Path
 */
 func (s *Submodule) Identifier() string {
-	return s.Identifier() + ">" + s.Path.String()
-}
+	s.Clean()
 
-/*
-CleanUp performs a data cleanup on this Submodule.
-*/
-func (s *Submodule) CleanUp() {
-	s.Path = s.Path.Clean()
-	s.Ref = strings.TrimSpace(s.Ref)
+	pathSuffix := ""
+
+	if s.Path.EmptyOrAtRoot() {
+		pathSuffix = filepath.Base(s.Url.Path)
+	} else {
+		pathSuffix = s.Path.String()
+	}
+
+	return s.RemoteIdentifier() + ">" + pathSuffix
 }
 
 /*
@@ -55,24 +68,18 @@ func (s *Submodule) String() string {
 Validate performs validation on this Submodule.
 */
 func (s *Submodule) Validate() error {
+	s.Clean()
 
-	// cleanup structure before validating
-	s.CleanUp()
-
-	// no empty values for s.Path and s.Url
-	if s.Path.String() == "" {
-		return fmt.Errorf("submodule path is required")
+	// url must be set
+	if s.Url.String() == "" {
+		return fmt.Errorf("submodule url is required")
 	}
 
 	if _, err := url.Parse(s.Url.String()); err != nil {
-		return fmt.Errorf("submodule url is invalid")
+		return fmt.Errorf("submodule urls is invalid")
 	}
 
-	// s.Path may not escape project root directory (so no ../)
-	if strings.Contains(string(s.Path), ".."+string(filepath.Separator)) {
-		return fmt.Errorf("submodule path escapes root directory (%s)", s.Path)
-	}
-
+	// no whitespaces in ref
 	if strings.Contains(s.Ref, " ") {
 		return fmt.Errorf("submodule ref contains spaces (%s)", s.Ref)
 	}
