@@ -45,6 +45,9 @@ build: clean
 clean:
 	@$(RM) -rf build
 
+test:
+	@go test ./.../tests
+
 git-test: build
 	@PATH="$$PATH:$(ROOT_DIR)/build" git nest
 
