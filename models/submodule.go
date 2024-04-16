@@ -30,7 +30,7 @@ Format: Submodule.Url@Submodule.Ref
 func (s *Submodule) RemoteIdentifier() string {
 	s.Clean()
 
-	hostPathConcat := s.Url.HostPathConcat(true)
+	hostPathConcat := s.Url.HostPathConcatForcePort()
 	if s.Ref != "" {
 		hostPathConcat = hostPathConcat + "@" + s.Ref
 	}

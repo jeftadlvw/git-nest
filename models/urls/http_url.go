@@ -43,18 +43,12 @@ func (u *HttpUrl) IsEmpty() bool {
 	return u.Hostname == ""
 }
 
-func (u *HttpUrl) HostPathConcat(forcePort bool) string {
-	if u.IsEmpty() {
-		return ""
-	}
+func (u *HttpUrl) HostPathConcat() string {
+	return u.hostPathConcat(false)
+}
 
-	var path string
-
-	if u.Path != "/" {
-		path = u.Path
-	}
-
-	return fmt.Sprintf("%s%s", u.Host(forcePort), path)
+func (u *HttpUrl) HostPathConcatForcePort() string {
+	return u.hostPathConcat(true)
 }
 
 func (u *HttpUrl) String() string {
@@ -71,7 +65,7 @@ func (u *HttpUrl) String() string {
 		scheme = "http"
 	}
 
-	hostPathConcat := u.HostPathConcat(false)
+	hostPathConcat := u.HostPathConcat()
 	if u.Path == "/" {
 		hostPathConcat = hostPathConcat + "/"
 	}
@@ -125,4 +119,18 @@ func HttpUrlFromString(s string) (HttpUrl, error) {
 	}
 
 	return HttpUrl{u.Hostname(), port, u.Path, secure}, nil
+}
+
+func (u *HttpUrl) hostPathConcat(forcePort bool) string {
+	if u.IsEmpty() {
+		return ""
+	}
+
+	var path string
+
+	if u.Path != "/" {
+		path = u.Path
+	}
+
+	return fmt.Sprintf("%s%s", u.Host(forcePort), path)
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestHttpUrl_Clean(t *testing.T) {
+func TestHttpUrlClean(t *testing.T) {
 	tests := []struct {
 		url      urls.HttpUrl
 		expected urls.HttpUrl
@@ -118,7 +118,28 @@ func TestHttpUrlHostPathConcat(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		result := tc.url.HostPathConcat(false)
+		result := tc.url.HostPathConcat()
+		if result != tc.expected {
+			t.Errorf("HostPathConcat() for %v returned %s, expected %s", tc.url, result, tc.expected)
+		}
+	}
+}
+
+func TestHttpUrlHostPathConcatForcePort(t *testing.T) {
+	cases := []struct {
+		url      urls.HttpUrl
+		expected string
+	}{
+		{urls.HttpUrl{"", 80, "/", false}, ""},
+		{urls.HttpUrl{"example.com", 80, "/", false}, "example.com:80"},
+		{urls.HttpUrl{"example.com", 443, "/", true}, "example.com:443"},
+		{urls.HttpUrl{"example.com", 8080, "/", false}, "example.com:8080"},
+		{urls.HttpUrl{"example.com", 8080, "/path", false}, "example.com:8080/path"},
+		{urls.HttpUrl{"example.com", 443, "/path/", true}, "example.com:443/path"},
+	}
+
+	for _, tc := range cases {
+		result := tc.url.HostPathConcatForcePort()
 		if result != tc.expected {
 			t.Errorf("HostPathConcat() for %v returned %s, expected %s", tc.url, result, tc.expected)
 		}
