@@ -1,30 +1,26 @@
 package tests
 
 import (
-	"github.com/jeftadlvw/git-nest/models"
+	"github.com/jeftadlvw/git-nest/utils"
 	"os"
 	"testing"
 )
 
 func TestPathExists(t *testing.T) {
-	dir, err := os.MkdirTemp("", "")
+	tempDir, err := utils.CreateTempDir()
 	if err != nil {
 		t.Errorf("Error creating temporary directory: %s", err)
 		return
 	}
-	tempDir := models.Path(dir)
-	defer os.RemoveAll(tempDir.String())
 
-	file, err := os.CreateTemp("", "")
+	tempFile, err := utils.CreateTempFile(tempDir)
 	if err != nil {
 		t.Errorf("Error creating temporary file: %s", err)
 		return
 	}
-	tempFile := models.Path(file.Name())
-	defer os.Remove(tempFile.String())
 
 	if !tempDir.Exists() {
-		t.Errorf("Directory does not exist: %s", tempFile.String())
+		t.Errorf("tempDirectory does not exist: %s", tempFile.String())
 	}
 
 	if !tempDir.IsDir() {
@@ -45,5 +41,15 @@ func TestPathExists(t *testing.T) {
 
 	if tempFile.IsDir() {
 		t.Errorf("Path is file but should be dir: %s", tempFile.String())
+	}
+
+	os.RemoveAll(tempDir.String())
+
+	if tempDir.Exists() || tempDir.IsDir() || tempDir.IsFile() {
+		t.Errorf("tempDirectory should not exist: %s", tempFile.String())
+	}
+
+	if tempFile.Exists() || tempFile.IsDir() || tempFile.IsFile() {
+		t.Errorf("File should not exist: %s", tempFile.String())
 	}
 }
