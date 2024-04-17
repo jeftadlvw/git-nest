@@ -32,7 +32,7 @@ INJECT_EPHEMERAL_BUILD_KEY := $(INJECT_BASE)/constants.ephemeralBuildStr
 INJECT_EPHEMERAL_BUILD_VALUE := false
 
 # build for local OS and architecture
-build: clean
+build: clean test
 	@go build \
 		-o $(BUILD_DIR)/$(APP_NAME) \
 		-ldflags " \
