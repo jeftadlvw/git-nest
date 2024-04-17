@@ -16,11 +16,10 @@ func (u *SshUrl) Clean() {
 	u.User = strings.TrimSpace(u.User)
 
 	u.Path = strings.TrimSpace(u.Path)
-	u.Path = strings.Trim(u.Path, "/")
-
-	if !strings.HasPrefix(u.Path, ":") {
-		u.Path = "/" + u.Path
+	if u.Path != "/" {
+		u.Path = strings.TrimSuffix(u.Path, "/")
 	}
+	u.Path = strings.TrimPrefix(u.Path, ":")
 }
 
 func (u *SshUrl) IsEmpty() bool {
@@ -35,8 +34,8 @@ func (u *SshUrl) HostPathConcat() string {
 
 	var path string
 
-	if u.Path != "/" {
-		path = u.Path
+	if u.Path != "" {
+		path = ":" + u.Path
 	}
 
 	return fmt.Sprintf("%s%s", u.Hostname, path)
@@ -89,7 +88,7 @@ func SshUrlFromString(s string) (SshUrl, error) {
 
 	u.User = userHostSplit[0]
 
-	// split host at : for hostname and :port/path
+	// split host at : for hostname and :path
 	if strings.HasPrefix(userHostSplit[1], ":") {
 		return u, fmt.Errorf("hostname does not exists or starts with a colon")
 	}
@@ -99,17 +98,9 @@ func SshUrlFromString(s string) (SshUrl, error) {
 		return SshUrl{}, fmt.Errorf("ssh urls may contain only one port")
 	}
 
+	u.Hostname = hostPathColonSplit[0]
 	if len(hostPathColonSplit) == 2 {
-		u.Hostname = hostPathColonSplit[0]
-		u.Path = ":" + hostPathColonSplit[1]
-	} else {
-		// split host at / for hostname and /part
-		hostPathSlashSplit := strings.SplitN(hostPathColonSplit[0], "/", 2)
-		u.Hostname = hostPathSlashSplit[0]
-
-		if len(hostPathSlashSplit) == 2 {
-			u.Path = "/" + hostPathSlashSplit[1]
-		}
+		u.Path = hostPathColonSplit[1]
 	}
 
 	if strings.Contains(u.Hostname, "/") {
