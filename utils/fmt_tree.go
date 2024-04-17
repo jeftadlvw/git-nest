@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"fmt"
+	"strings"
 )
 
 type Node struct {
@@ -10,9 +11,7 @@ type Node struct {
 	Value interface{}
 }
 
-const defaultIndent string = "  "
-
-func FmtTree(indent string, nodes ...Node) string {
+func FmtTree(indent string, rootLevel bool, nodes ...Node) string {
 
 	buffer := bytes.NewBufferString("")
 
@@ -21,17 +20,21 @@ func FmtTree(indent string, nodes ...Node) string {
 		maxKeyLength = max(maxKeyLength, len(node.Key))
 	}
 
+	localIndent := indent
+	if rootLevel {
+		localIndent = ""
+	}
+
 	for _, node := range nodes {
 		switch v := node.Value.(type) {
 		case []Node:
-			_, _ = fmt.Fprintf(buffer, "%s%s:\n", indent, node.Key)
-			formattedMapTree := FmtTree(indent+defaultIndent, v...)
+			_, _ = fmt.Fprintf(buffer, "%s%s:\n", localIndent, node.Key)
+			formattedMapTree := FmtTree(localIndent+indent, false, v...)
 			_, _ = fmt.Fprintf(buffer, "%s\n", formattedMapTree)
 		default:
-			fmt.Fprintf(buffer, "%s%s:%-*s %v\n", indent, node.Key, maxKeyLength-len(node.Key)+2, "", node.Value)
+			fmt.Fprintf(buffer, "%s%s:%-*s%v\n", localIndent, node.Key, maxKeyLength-len(node.Key)+3, "", node.Value)
 		}
 	}
 
-	return buffer.String()
-
+	return strings.TrimSuffix(buffer.String(), "\n")
 }
