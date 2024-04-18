@@ -65,7 +65,7 @@ func CreateContext() (models.NestContext, error) {
 	}
 
 	// check if project root is also a git repository
-	gitRootStr, err := utils.GetGitRemoteUrl(projectRoot)
+	gitRootStr, err := utils.GetGitRootDirectory(projectRoot)
 	IsGitInstalled = false
 	isGitProject = false
 	if err != nil {

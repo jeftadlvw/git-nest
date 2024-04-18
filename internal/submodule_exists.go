@@ -47,21 +47,21 @@ func SubmoduleExists(s models.Submodule, root models.Path) SubmoduleExist {
 		returnExists.Payload = submoduleGitRemoteUrl
 	}
 
-	remoteRef, err := utils.GetGitFetchHead(submodulePath)
+	remoteRef, remoteRefAbbrev, err := utils.GetGitFetchHead(submodulePath)
 	if err != nil {
 		returnExists.Flag = SUBMODULE_EXISTS_ERR_HEAD
 		returnExists.Error = err
 	}
 
 	if len(remoteRef) == 0 {
-		if !strings.HasPrefix(remoteRef[0], s.Ref) {
+		if !strings.HasPrefix(remoteRef, s.Ref) {
 			returnExists.Flag = SUBMODULE_EXISTS_ERR_HEAD
-			returnExists.Payload = remoteRef[0]
+			returnExists.Payload = remoteRef
 		}
 	} else {
-		if remoteRef[1] != s.Ref {
+		if remoteRefAbbrev != s.Ref {
 			returnExists.Flag = SUBMODULE_EXISTS_ERR_HEAD
-			returnExists.Payload = remoteRef[1]
+			returnExists.Payload = remoteRefAbbrev
 		}
 	}
 

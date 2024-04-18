@@ -90,9 +90,13 @@ func GetGitRootDirectory(d models.Path) (string, error) {
 }
 
 func GetGitRemoteUrl(d models.Path) (string, error) {
-	path, err := RunCommand(d, "git", "rev-parse", "--show-toplevel")
+	if d.Empty() {
+		return "", errors.New("path to repository may not be empty")
+	}
+
+	path, err := RunCommandCombinedOutput(d, "git", "config", "--get", "remote.origin.url")
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error running git config: %s; output: %s", err, path)
 	}
 
 	if strings.HasPrefix(path, "fatal:") {
@@ -102,29 +106,30 @@ func GetGitRemoteUrl(d models.Path) (string, error) {
 	return path, nil
 }
 
-func GetGitFetchHead(d models.Path) ([]string, error) {
-	longHead, err := RunCommand(d, "git", "rev-parse", "--verify", "HEAD")
+func GetGitFetchHead(d models.Path) (string, string, error) {
+	if d.Empty() {
+		return "", "", errors.New("path to repository may not be empty")
+	}
+
+	longHead, err := RunCommandCombinedOutput(d, "git", "rev-parse", "--verify", "HEAD")
 	if err != nil {
-		return nil, err
+		return "", "", fmt.Errorf("error running git rev-parse: %s; output: %s", err, longHead)
 	}
 
 	if strings.HasPrefix(longHead, "fatal:") {
-		return nil, errors.New("git root not found")
+		return "", "", errors.New("git root not found")
 	}
 
-	abbrevHead, err := RunCommand(d, "git", "rev-parse", "--abbref-rev", "HEAD")
+	abbrevHead, err := RunCommandCombinedOutput(d, "git", "rev-parse", "--abbrev-ref", "HEAD")
 	if err != nil {
-		return nil, err
+		return "", "", fmt.Errorf("error running git rev-parse: %s; output: %s", err, abbrevHead)
 	}
-
-	returnArr := []string{longHead}
 
 	if abbrevHead != "HEAD" {
-		returnArr = append(returnArr, longHead)
-		return returnArr, nil
+		return longHead, abbrevHead, nil
 	}
 
-	return returnArr, nil
+	return longHead, "", nil
 }
 
 func GetGitVersion() (string, error) {
