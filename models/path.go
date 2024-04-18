@@ -148,7 +148,7 @@ func (p *Path) BContains(pattern string) bool {
 String returns this Path as its base type, removing the need for specific casts.
 */
 func (p *Path) String() string {
-	return string(*p)
+	return strings.TrimSpace(string(*p))
 }
 
 /*
