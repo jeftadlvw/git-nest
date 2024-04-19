@@ -5,10 +5,18 @@ import (
 	"strings"
 )
 
+/*
+StringInsert inserts a string between the start and end delimiter strings.
+Use StringInsertAtFirst if multiple occurrences of both delimiters are allowed in the input string.
+*/
 func StringInsert(original string, insert string, startDelimiter string, endDelimiter string) (string, error) {
 	return stringInsert(original, insert, startDelimiter, endDelimiter, false)
 }
 
+/*
+StringInsertAtFirst is the same as StringInsert, but allows the occurrence of multiple delimiter string in the input string
+by only replacing the first start-end combination.
+*/
 func StringInsertAtFirst(original string, insert string, startDelimiter string, endDelimiter string) (string, error) {
 	return stringInsert(original, insert, startDelimiter, endDelimiter, true)
 }

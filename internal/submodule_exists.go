@@ -6,12 +6,6 @@ import (
 	"strings"
 )
 
-type SubmoduleExist struct {
-	Flag    int
-	Payload string
-	Error   error
-}
-
 const (
 	SUBMODULE_EXISTS_OK           = iota
 	SUBMODULE_EXISTS_ERR_NO_EXIST = iota
@@ -21,49 +15,52 @@ const (
 	SUBMODULE_EXISTS_ERR_HEAD     = iota
 )
 
-func SubmoduleExists(s models.Submodule, root models.Path) SubmoduleExist {
-	returnExists := SubmoduleExist{SUBMODULE_EXISTS_OK, "", nil}
+/*
+SubmoduleExists returns whether and in what state a possible submodule exists.
+*/
+func SubmoduleExists(s models.Submodule, root models.Path) (int, string, error) {
 	submodulePath := root.Join(s.Path)
 
 	if !submodulePath.Exists() {
-		returnExists.Flag = SUBMODULE_EXISTS_ERR_NO_EXIST
-		return returnExists
+		return SUBMODULE_EXISTS_ERR_NO_EXIST, "", nil
 	}
 
 	if !submodulePath.IsDir() {
-		returnExists.Flag = SUBMODULE_EXISTS_ERR_FILE
-		return returnExists
+		return SUBMODULE_EXISTS_ERR_FILE, "", nil
 	}
 
 	submoduleGitRemoteUrl, err := utils.GetGitRemoteUrl(submodulePath)
 	if err != nil {
-		returnExists.Flag = SUBMODULE_EXISTS_ERR_NO_GIT
-		returnExists.Error = err
-		return returnExists
+		return SUBMODULE_EXISTS_ERR_NO_GIT, "", nil
 	}
 
 	if submoduleGitRemoteUrl != s.Url.String() {
-		returnExists.Flag = SUBMODULE_EXISTS_ERR_REMOTE
-		returnExists.Payload = submoduleGitRemoteUrl
+		return SUBMODULE_EXISTS_ERR_REMOTE, submoduleGitRemoteUrl, nil
 	}
+
+	var (
+		returnFlag    = SUBMODULE_EXISTS_OK
+		returnPayload string
+		returnErr     error
+	)
 
 	remoteRef, remoteRefAbbrev, err := utils.GetGitFetchHead(submodulePath)
 	if err != nil {
-		returnExists.Flag = SUBMODULE_EXISTS_ERR_HEAD
-		returnExists.Error = err
+		returnFlag = SUBMODULE_EXISTS_ERR_HEAD
+		returnErr = err
 	}
 
 	if len(remoteRef) == 0 {
 		if !strings.HasPrefix(remoteRef, s.Ref) {
-			returnExists.Flag = SUBMODULE_EXISTS_ERR_HEAD
-			returnExists.Payload = remoteRef
+			returnFlag = SUBMODULE_EXISTS_ERR_HEAD
+			returnPayload = remoteRef
 		}
 	} else {
 		if remoteRefAbbrev != s.Ref {
-			returnExists.Flag = SUBMODULE_EXISTS_ERR_HEAD
-			returnExists.Payload = remoteRefAbbrev
+			returnFlag = SUBMODULE_EXISTS_ERR_HEAD
+			returnPayload = remoteRefAbbrev
 		}
 	}
 
-	return returnExists
+	return returnFlag, returnPayload, returnErr
 }

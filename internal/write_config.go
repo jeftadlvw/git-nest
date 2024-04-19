@@ -1,45 +1,50 @@
 package internal
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/utils"
 	"regexp"
 	"strings"
-	"text/template"
 )
 
 const gitExcludeFile = ".git/info/exclude"
-const gitExcludeStartString string = "# git-nest configuration start"
-const gitExcludeEndString string = "# git-nest configuration end"
-const excludeTemplate string = `# This part influences how git handles nested modules using git-nest.
-# Do not touch except you know what you are doing!
-{{- range . }}
-{{ .Path }}
-{{- end }}`
+const gitExcludePrefix string = "# git-nest configuration start"
+const gitExcludeSuffix string = "# git-nest configuration end"
+const gitExcludeInfo string = `# This part influences how git handles nested modules using git-nest.
+# Do not touch except you know what you are doing!`
 
-func FmtSubmodulesGitExclude(submodules []models.Submodule) string {
-	buffer := bytes.NewBufferString("")
-
-	t := template.Must(template.New("exclude").Parse(excludeTemplate))
-	err := t.Execute(buffer, submodules)
-	if err != nil {
-		return ""
+/*
+FmtSubmodulesGitIgnore returns a string that formats a slice of models.Submodule into a string that can be used by git to ignore the submodules' paths.
+*/
+func FmtSubmodulesGitIgnore(submodules []models.Submodule) string {
+	sb := strings.Builder{}
+	for _, submodule := range submodules {
+		sb.WriteString(submodule.Path.String())
+		sb.WriteString("\n")
 	}
 
-	return strings.TrimSpace(buffer.String())
+	return strings.TrimSpace(sb.String())
 }
 
-func WriteSubmodulePathIgnoreConfig(p models.Path, modules []models.Submodule) error {
-	submoduleGitExcludePart := FmtSubmodulesGitExclude(modules)
-	submoduleGitExcludePart = gitExcludeStartString + "\n" + submoduleGitExcludePart + "\n" + gitExcludeEndString
+/*
+WriteSubmoduleIgnoreConfig uses internal.FmtSubmodulesGitIgnore, wraps it with some user information and writes that
+into the passed file. Pre-existing configuration is replaced using utils.StringInsertAtFirst.
+*/
+func WriteSubmoduleIgnoreConfig(p models.Path, modules []models.Submodule) error {
+	submoduleGitExcludeFmt := FmtSubmodulesGitIgnore(modules)
+	submoduleGitExcludePart := gitExcludePrefix + "\n" + gitExcludeInfo + "\n"
+
+	if submoduleGitExcludeFmt != "" {
+		submoduleGitExcludePart = submoduleGitExcludePart + submoduleGitExcludeFmt + "\n"
+	}
+	submoduleGitExcludePart = submoduleGitExcludePart + gitExcludeSuffix
 
 	fileContent := submoduleGitExcludePart
 
 	existingContent, err := utils.ReadFileToStr(p)
 	if err == nil {
-		localFileContent, localErr := utils.StringInsertAtFirst(existingContent, submoduleGitExcludePart, gitExcludeStartString, gitExcludeEndString)
+		localFileContent, localErr := utils.StringInsertAtFirst(existingContent, submoduleGitExcludePart, gitExcludePrefix, gitExcludeSuffix)
 		if localErr == nil {
 			fileContent = localFileContent
 		}
@@ -49,6 +54,9 @@ func WriteSubmodulePathIgnoreConfig(p models.Path, modules []models.Submodule) e
 	return err
 }
 
+/*
+WriteNestConfig writes models.Submodule configuration into the git-nest configuration file, preserving the first [config] section.
+*/
 func WriteNestConfig(p models.Path, modules []models.Submodule) error {
 	existingContent := ""
 	existingConfig := ""
@@ -96,6 +104,10 @@ func WriteNestConfig(p models.Path, modules []models.Submodule) error {
 	return nil
 }
 
+/*
+WriteProjectConfigFiles is a total wrapper function for internal.WriteSubmoduleIgnoreConfig and internal.WriteNestConfig,
+calling both functions based on the passed models.NestContext.
+*/
 func WriteProjectConfigFiles(c models.NestContext) (bool, bool, error, error) {
 
 	var gitExcludeWritten, configWritten bool
@@ -103,7 +115,7 @@ func WriteProjectConfigFiles(c models.NestContext) (bool, bool, error, error) {
 
 	// write to git_exclude if project is a git repository
 	if c.IsGitInstalled && c.IsGitRepository {
-		err := WriteSubmodulePathIgnoreConfig(c.GitRepositoryRoot.SJoin(gitExcludeFile), c.Config.Submodules)
+		err := WriteSubmoduleIgnoreConfig(c.GitRepositoryRoot.SJoin(gitExcludeFile), c.Config.Submodules)
 		if err == nil {
 			gitExcludeWritten = true
 		}

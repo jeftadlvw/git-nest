@@ -6,11 +6,19 @@ import (
 	"strings"
 )
 
+/*
+Node is a small key-value structure to fake an ordered dictionary.
+Should only be used for formatting with FmtTree.
+*/
 type Node struct {
 	Key   string
 	Value interface{}
 }
 
+/*
+FmtTree formats an array of Node to output an ordered information tree.
+Allows nesting of Node.
+*/
 func FmtTree(indent string, rootLevel bool, nodes ...Node) string {
 
 	buffer := bytes.NewBufferString("")
@@ -32,7 +40,7 @@ func FmtTree(indent string, rootLevel bool, nodes ...Node) string {
 			formattedMapTree := FmtTree(localIndent+indent, false, v...)
 			_, _ = fmt.Fprintf(buffer, "%s\n", formattedMapTree)
 		default:
-			fmt.Fprintf(buffer, "%s%s:%-*s%v\n", localIndent, node.Key, maxKeyLength-len(node.Key)+3, "", node.Value)
+			_, _ = fmt.Fprintf(buffer, "%s%s:%-*s%v\n", localIndent, node.Key, maxKeyLength-len(node.Key)+3, "", node.Value)
 		}
 	}
 

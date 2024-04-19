@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+/*
+CloneGitRepository clones a remote git repository.
+*/
 func CloneGitRepository(url string, p models.Path, cloneDirName string) error {
 	url = strings.TrimSpace(url)
 	if url == "" {
@@ -46,6 +49,9 @@ func CloneGitRepository(url string, p models.Path, cloneDirName string) error {
 	return nil
 }
 
+/*
+ChangeGitHead changes a local repository's HEAD.
+*/
 func ChangeGitHead(repository models.Path, head string) error {
 	head = strings.TrimSpace(head)
 	if head == "" {
@@ -72,6 +78,9 @@ func ChangeGitHead(repository models.Path, head string) error {
 	return nil
 }
 
+/*
+GetGitRootDirectory retrieves the root of a git directory tree.
+*/
 func GetGitRootDirectory(d models.Path) (string, error) {
 	if d.Empty() {
 		return "", errors.New("path to repository may not be empty")
@@ -89,6 +98,9 @@ func GetGitRootDirectory(d models.Path) (string, error) {
 	return path, nil
 }
 
+/*
+GetGitRemoteUrl retrieves the remote url from a git directory tree.
+*/
 func GetGitRemoteUrl(d models.Path) (string, error) {
 	if d.Empty() {
 		return "", errors.New("path to repository may not be empty")
@@ -106,6 +118,9 @@ func GetGitRemoteUrl(d models.Path) (string, error) {
 	return path, nil
 }
 
+/*
+GetGitFetchHead retrieves the current HEAD of a local repository.
+*/
 func GetGitFetchHead(d models.Path) (string, string, error) {
 	if d.Empty() {
 		return "", "", errors.New("path to repository may not be empty")
@@ -132,6 +147,9 @@ func GetGitFetchHead(d models.Path) (string, string, error) {
 	return longHead, "", nil
 }
 
+/*
+GetGitVersion retrieves the git version installed in the current environment. Can also be used to check if git is installed.
+*/
 func GetGitVersion() (string, error) {
 	version, err := exec.Command("git", "--version").Output()
 	if err != nil {

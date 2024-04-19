@@ -7,11 +7,24 @@ import (
 	"strings"
 )
 
+/*
+NestConfig represents a higher-order configuration for git-nest.
+*/
 type NestConfig struct {
-	Config     Config      `toml:"config"`
+	/*
+		Config contains every configuration flag.
+	*/
+	Config Config `toml:"config"`
+
+	/*
+		Submodule contains all Submodule for this configuration.
+	*/
 	Submodules []Submodule `toml:"submodule"`
 }
 
+/*
+Validate performs validation on this NestConfig.
+*/
 func (c NestConfig) Validate() error {
 	err := c.Config.Validate()
 	if err != nil {

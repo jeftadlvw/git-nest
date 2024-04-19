@@ -5,12 +5,29 @@ import (
 	"strings"
 )
 
+/*
+HttpUrl represents a regular ssh url.
+*/
 type SshUrl struct {
+	/*
+		Hostname contains the domain name or ip address.
+	*/
 	Hostname string
-	User     string
-	Path     string
+
+	/*
+		User contains the username that want to connect to the host.
+	*/
+	User string
+
+	/*
+		Path contains anything else specifying the connection.
+	*/
+	Path string
 }
 
+/*
+Clean cleans up struct values.
+*/
 func (u *SshUrl) Clean() {
 	u.Hostname = strings.TrimSpace(u.Hostname)
 	u.User = strings.TrimSpace(u.User)
@@ -22,11 +39,17 @@ func (u *SshUrl) Clean() {
 	u.Path = strings.TrimPrefix(u.Path, ":")
 }
 
+/*
+IsEmpty returns whether Hostname or User is empty or not. It calls Clean() beforehand.
+*/
 func (u *SshUrl) IsEmpty() bool {
 	u.Clean()
 	return u.Hostname == "" || u.User == ""
 }
 
+/*
+HostPathConcat returns the url without the protocol.
+*/
 func (u *SshUrl) HostPathConcat() string {
 	if u.IsEmpty() {
 		return ""
@@ -41,6 +64,9 @@ func (u *SshUrl) HostPathConcat() string {
 	return fmt.Sprintf("%s%s", u.Hostname, path)
 }
 
+/*
+String returns this SshUrl back as a usable url.
+*/
 func (u *SshUrl) String() string {
 	if u.IsEmpty() {
 		return ""
@@ -49,6 +75,9 @@ func (u *SshUrl) String() string {
 	return fmt.Sprintf("ssh://%s@%s", u.User, u.HostPathConcat())
 }
 
+/*
+UnmarshalText implements the encoding.TextUnmarshaler interface.
+*/
 func (u *SshUrl) UnmarshalText(text []byte) error {
 	sshUrl, err := SshUrlFromString(string(text))
 	if err != nil {
@@ -58,10 +87,16 @@ func (u *SshUrl) UnmarshalText(text []byte) error {
 	return nil
 }
 
+/*
+MarshalText implements the encoding.TextMarshaler interface.
+*/
 func (u *SshUrl) MarshalText() (text []byte, err error) {
 	return []byte(u.String()), nil
 }
 
+/*
+SshUrlFromString creates a SshUrl from a string, returning an error if validation fails.
+*/
 func SshUrlFromString(s string) (SshUrl, error) {
 	u := SshUrl{}
 

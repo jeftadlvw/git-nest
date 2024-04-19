@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+/*
+PopulateNestConfigFromToml populates a models.NestConfig from a configuration in TOML's markup language.
+*/
 func PopulateNestConfigFromToml(nestConfig *models.NestConfig, s string, strict bool) error {
 	md, err := toml.Decode(s, &nestConfig)
 	if err != nil {
@@ -21,6 +24,9 @@ func PopulateNestConfigFromToml(nestConfig *models.NestConfig, s string, strict 
 	return nil
 }
 
+/*
+SubmoduleToTomlConfig returns a configuration string in TOML's markup language for a single models.Submodule.
+*/
 func SubmoduleToTomlConfig(s models.Submodule, indent string) string {
 	var sb strings.Builder
 
@@ -37,6 +43,9 @@ func SubmoduleToTomlConfig(s models.Submodule, indent string) string {
 	return strings.TrimSpace(sb.String())
 }
 
+/*
+SubmodulesToTomlConfig returns a configuration string in TOML's markup language for more structs of type models.Submodule.
+*/
 func SubmodulesToTomlConfig(indent string, submodules ...models.Submodule) string {
 	var sb strings.Builder
 	for _, submodule := range submodules {
@@ -47,6 +56,9 @@ func SubmodulesToTomlConfig(indent string, submodules ...models.Submodule) strin
 	return strings.TrimSpace(sb.String())
 }
 
+/*
+formatTomlKeyValue formats a key and value in TOML's markup language.
+*/
 func formatTomlKeyValue(k string, v string, indent string) string {
 	return fmt.Sprintf("%s%s = \"%s\"\n", indent, k, v)
 }

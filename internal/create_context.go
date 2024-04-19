@@ -42,7 +42,7 @@ func CreateContext() (models.NestContext, error) {
 	}
 
 	// evaluate configuration file path
-	configFilePath = evaluateConfigFileFromProjectRoot(projectRoot)
+	configFilePath = evaluateConfigFileFromDir(projectRoot)
 	if configFilePath.IsDir() {
 		return nestContext, fmt.Errorf("configuration path to %s is a directory", configFilePath.String())
 	}
@@ -93,10 +93,14 @@ func CreateContext() (models.NestContext, error) {
 	return nestContext, nil
 }
 
-func evaluateConfigFileFromProjectRoot(root models.Path) models.Path {
-	if root.BContains(constants.ConfigSubDirFileName) {
-		return root.SJoin(constants.ConfigSubDirFileName)
+/*
+evaluateConfigFileFromDir returns an absolute path to the git-nest configuration file for a given directory.
+Defaults to constants.ConfigFileName if the file at constants.ConfigSubDirFileName does not exist.
+*/
+func evaluateConfigFileFromDir(d models.Path) models.Path {
+	if d.BContains(constants.ConfigSubDirFileName) {
+		return d.SJoin(constants.ConfigSubDirFileName)
 	}
 
-	return root.SJoin(constants.ConfigFileName)
+	return d.SJoin(constants.ConfigFileName)
 }

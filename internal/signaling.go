@@ -6,6 +6,9 @@ import (
 	"syscall"
 )
 
+/*
+HandleOsTerminationSignals handles received system signals, calls a callback and exists.
+*/
 func HandleOsTerminationSignals(c <-chan os.Signal, callback func()) {
 	for {
 		// waiting for signal to arrive

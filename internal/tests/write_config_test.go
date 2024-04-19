@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"github.com/jeftadlvw/git-nest/internal"
+	"github.com/jeftadlvw/git-nest/internal/constants"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/utils"
 	"os"
@@ -12,9 +13,9 @@ import (
 
 const testRepoUrl = "https://github.com/jeftadlvw/example-repository.git"
 const gitExcludeFile = ".git/info/exclude"
-const gitExcludeStartString string = "# git-nest configuration start"
-const gitExcludeEndString string = "# git-nest configuration end"
-const excludeTemplate string = `# This part influences how git handles nested modules using git-nest.
+const gitExcludePrefix string = "# git-nest configuration start"
+const gitExcludeSuffix string = "# git-nest configuration end"
+const gitExcludeInfo string = `# This part influences how git handles nested modules using git-nest.
 # Do not touch except you know what you are doing!`
 
 func TestFmtSubmodulesGitExclude(t *testing.T) {
@@ -28,14 +29,9 @@ func TestFmtSubmodulesGitExclude(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		completeExpectedOutput := excludeTemplate
-		if tc.expected != "" {
-			completeExpectedOutput = completeExpectedOutput + "\n" + tc.expected
-		}
-
-		output := internal.FmtSubmodulesGitExclude(tc.submodules)
-		if output != completeExpectedOutput {
-			t.Errorf("FmtSubmodulesGitExclude() for %v\nExpected:\n>%s<\n\nActual:\n>%s<", tc, completeExpectedOutput, output)
+		output := internal.FmtSubmodulesGitIgnore(tc.submodules)
+		if output != tc.expected {
+			t.Errorf("FmtSubmodulesGitIgnore() for %v\nExpected:\n>%s<\n\nActual:\n>%s<", tc, tc.expected, output)
 		}
 	}
 }
@@ -63,30 +59,30 @@ func TestWriteSubmodulePathIgnoreConfig(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		expectedContains := excludeTemplate
+		expectedContains := gitExcludeInfo
 		if tc.expected != "" {
 			expectedContains = expectedContains + "\n" + tc.expected
 		}
-		expectedContains = gitExcludeStartString + "\n" + expectedContains + "\n" + gitExcludeEndString
+		expectedContains = gitExcludePrefix + "\n" + expectedContains + "\n" + gitExcludeSuffix
 
-		err = internal.WriteSubmodulePathIgnoreConfig(tempFile, tc.submodules)
+		err = internal.WriteSubmoduleIgnoreConfig(tempFile, tc.submodules)
 		if tc.error && err == nil {
-			t.Errorf("WriteSubmodulePathIgnoreConfig() for %v returned no error but expected one", tc)
+			t.Errorf("WriteSubmoduleIgnoreConfig() for %v returned no error but expected one", tc)
 			continue
 		}
 		if !tc.error && err != nil {
-			t.Errorf("WriteSubmodulePathIgnoreConfig() for %v returned error, but should've not -> %s", tc, err)
+			t.Errorf("WriteSubmoduleIgnoreConfig() for %v returned error, but should've not -> %s", tc, err)
 			continue
 		}
 
 		fileContents, err := utils.ReadFileToStr(tempFile)
 		if err != nil {
-			t.Errorf("WriteSubmodulePathIgnoreConfig() failed to read temp file")
+			t.Errorf("WriteSubmoduleIgnoreConfig() failed to read temp file")
 			continue
 		}
 
 		if !strings.Contains(fileContents, expectedContains) {
-			t.Errorf("WriteSubmodulePathIgnoreConfig() for %v expected string in file\nExpected:\n>%s<\n\nFile:\n>%s<", tc, expectedContains, fileContents)
+			t.Errorf("WriteSubmoduleIgnoreConfig() for %v expected string in file\nExpected:\n>%s<\n\nFile:\n>%s<", tc, expectedContains, fileContents)
 			continue
 		}
 	}
@@ -213,7 +209,7 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 		}
 		defer os.RemoveAll(tempDir.String())
 
-		var configFile = tempDir.SJoin("nestmodules.toml")
+		var configFile = tempDir.SJoin(constants.ConfigFileName)
 		var absGitExcludeFile = tempDir.SJoin(gitExcludeFile)
 
 		context := models.NestContext{
@@ -261,7 +257,7 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 				t.Errorf("configuration file does not contain submodules")
 			}
 
-			if !strings.Contains(gitExcludeContents, internal.FmtSubmodulesGitExclude(context.Config.Submodules)) {
+			if !strings.Contains(gitExcludeContents, internal.FmtSubmodulesGitIgnore(context.Config.Submodules)) {
 				t.Errorf("git exclude file does not contain submodules")
 			}
 		}
@@ -278,7 +274,7 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 		}
 		defer os.RemoveAll(tempDir.String())
 
-		var configFile = tempDir.SJoin("nestmodules.toml")
+		var configFile = tempDir.SJoin(constants.ConfigFileName)
 		var absGitExcludeFile = tempDir.SJoin(gitExcludeFile)
 
 		context := models.NestContext{
@@ -326,7 +322,7 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 				t.Errorf("configuration file does not contain submodules")
 			}
 
-			if strings.Contains(gitExcludeContents, internal.FmtSubmodulesGitExclude(context.Config.Submodules)) {
+			if strings.Contains(gitExcludeContents, internal.FmtSubmodulesGitIgnore(context.Config.Submodules)) {
 				t.Errorf("git exclude file does contains submodules")
 			}
 		}
