@@ -70,6 +70,13 @@ Validate performs validation on this Submodule.
 func (s *Submodule) Validate() error {
 	s.Clean()
 
+	forbiddenCharacters := "!*"
+	for _, char := range forbiddenCharacters {
+		if strings.Contains(s.Path.String(), "*") {
+			return fmt.Errorf("submodule path contains forbidden character '%c'", char)
+		}
+	}
+
 	// url must be set
 	if s.Url.String() == "" {
 		return fmt.Errorf("submodule url is required")
