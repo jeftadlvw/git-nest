@@ -15,10 +15,10 @@ func main() {
 	var execOnce sync.Once
 
 	go internal.HandleOsTerminationSignals(c, func() {
-		execOnce.Do(internal.MockCleanupFunc)
+		execOnce.Do(internal.Cleanup)
 	})
 
 	exitCode := cmd.Execute()
-	execOnce.Do(internal.MockCleanupFunc)
+	execOnce.Do(internal.Cleanup)
 	os.Exit(exitCode)
 }

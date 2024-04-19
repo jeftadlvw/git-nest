@@ -32,7 +32,7 @@ INJECT_EPHEMERAL_BUILD_KEY := $(INJECT_BASE)/constants.ephemeralBuildStr
 INJECT_EPHEMERAL_BUILD_VALUE := false
 
 # build for local OS and architecture
-build: clean
+build: clean test
 	@go build \
 		-o $(BUILD_DIR)/$(APP_NAME) \
 		-ldflags " \
@@ -44,6 +44,9 @@ build: clean
 
 clean:
 	@$(RM) -rf build
+
+test:
+	@go test ./.../tests
 
 git-test: build
 	@PATH="$$PATH:$(ROOT_DIR)/build" git nest
