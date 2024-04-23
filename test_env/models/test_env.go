@@ -1,4 +1,4 @@
-package test_env
+package models
 
 import (
 	"github.com/jeftadlvw/git-nest/models"

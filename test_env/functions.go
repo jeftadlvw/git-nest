@@ -1,37 +1,46 @@
 package test_env
 
 import (
-	"errors"
 	"fmt"
+	"github.com/jeftadlvw/git-nest/test_env/models"
 	"github.com/jeftadlvw/git-nest/utils"
+	"path/filepath"
 	"strings"
 )
 
-func CreateTestEnvironment(origin string, ref string) (TestEnv, error) {
-
-	if origin == "" {
-		return TestEnv{}, errors.New("origin is empty")
-	}
-	ref = strings.TrimSpace(ref)
+func CreateTestEnvironment(settings models.EnvSettings) (models.TestEnv, error) {
 
 	tempDir, err := utils.CreateTempDir()
 	if err != nil {
-		return TestEnv{}, fmt.Errorf("error creating temporary directory: %w", err)
+		return models.TestEnv{}, fmt.Errorf("error creating temporary directory: %w", err)
 	}
 
-	err = utils.CloneGitRepository(origin, tempDir, "temp")
-	if err != nil {
-		return TestEnv{}, fmt.Errorf("unable to clone git repository: %w", err)
-	}
+	settings.Origin = strings.TrimSpace(settings.Origin)
+	if settings.Origin != "" {
+		cloneDirName := strings.TrimSpace(settings.CloneDir)
 
-	if ref != "" {
-		err = utils.ChangeGitHead(tempDir, ref)
+		err = utils.CloneGitRepository(settings.Origin, tempDir, cloneDirName)
 		if err != nil {
-			return TestEnv{}, fmt.Errorf("error while changing ref: %s", err)
+			return models.TestEnv{}, fmt.Errorf("unable to clone git repository: %w", err)
+		}
+
+		settings.Ref = strings.TrimSpace(settings.Ref)
+		gitDir := tempDir
+		if cloneDirName != "" {
+			gitDir = gitDir.SJoin(cloneDirName)
+		} else {
+			gitDir = gitDir.SJoin(filepath.Base(settings.Origin))
+		}
+
+		if settings.Ref != "" {
+			err = utils.ChangeGitHead(gitDir, settings.Ref)
+			if err != nil {
+				return models.TestEnv{}, fmt.Errorf("error while changing ref: %s", err)
+			}
 		}
 	}
 
-	return TestEnv{
+	return models.TestEnv{
 		Dir: tempDir,
 	}, nil
 }
