@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestNestConfig_Validate(t *testing.T) {
+func TestNestConfigValidate(t *testing.T) {
 	cases := []struct {
 		name   string
 		config models.NestConfig
