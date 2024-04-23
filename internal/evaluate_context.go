@@ -9,12 +9,12 @@ the context's configuration.
 func EvaluateContext() (models.NestContext, error) {
 	context, err := CreateContext()
 	if err != nil {
-		return context, err
+		return models.NestContext{}, err
 	}
 
 	err = context.Config.Validate()
 	if err != nil {
-		return context, err
+		return models.NestContext{}, err
 	}
 
 	return context, nil
