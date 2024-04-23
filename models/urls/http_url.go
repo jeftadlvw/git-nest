@@ -140,7 +140,7 @@ func HttpUrlFromString(s string) (HttpUrl, error) {
 	}
 
 	if !strings.Contains(u.Scheme, "http") {
-		return emptyUrl, errors.New("scheme is not http")
+		return emptyUrl, errors.New("scheme is not http-based")
 	}
 
 	var (
