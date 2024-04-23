@@ -35,5 +35,5 @@ type Url interface {
 		MarshalText ensures the implementation of encoding.TextMarshaler interface.
 		Marshals this Url struct back into a slice of bytes.
 	*/
-	MarshalText(text []byte) ([]byte, error)
+	MarshalText() ([]byte, error)
 }
