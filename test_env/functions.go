@@ -15,27 +15,37 @@ func CreateTestEnvironment(settings models.EnvSettings) (models.TestEnv, error) 
 		return models.TestEnv{}, fmt.Errorf("error creating temporary directory: %w", err)
 	}
 
-	settings.Origin = strings.TrimSpace(settings.Origin)
-	if settings.Origin != "" {
-		cloneDirName := strings.TrimSpace(settings.CloneDir)
+	if !settings.NoGit {
 
-		err = utils.CloneGitRepository(settings.Origin, tempDir, cloneDirName)
-		if err != nil {
-			return models.TestEnv{}, fmt.Errorf("unable to clone git repository: %w", err)
-		}
+		if !settings.EmptyGit {
+			settings.Origin = strings.TrimSpace(settings.Origin)
+			if settings.Origin != "" {
+				cloneDirName := strings.TrimSpace(settings.CloneDir)
 
-		settings.Ref = strings.TrimSpace(settings.Ref)
-		gitDir := tempDir
-		if cloneDirName != "" {
-			gitDir = gitDir.SJoin(cloneDirName)
+				err = utils.CloneGitRepository(settings.Origin, tempDir, cloneDirName)
+				if err != nil {
+					return models.TestEnv{}, fmt.Errorf("unable to clone git repository: %w", err)
+				}
+
+				settings.Ref = strings.TrimSpace(settings.Ref)
+				gitDir := tempDir
+				if cloneDirName != "" {
+					gitDir = gitDir.SJoin(cloneDirName)
+				} else {
+					gitDir = gitDir.SJoin(filepath.Base(settings.Origin))
+				}
+
+				if settings.Ref != "" {
+					err = utils.ChangeGitHead(gitDir, settings.Ref)
+					if err != nil {
+						return models.TestEnv{}, fmt.Errorf("error while changing ref: %s", err)
+					}
+				}
+			}
 		} else {
-			gitDir = gitDir.SJoin(filepath.Base(settings.Origin))
-		}
-
-		if settings.Ref != "" {
-			err = utils.ChangeGitHead(gitDir, settings.Ref)
+			_, err = utils.RunCommandCombinedOutput(tempDir, "git", "init")
 			if err != nil {
-				return models.TestEnv{}, fmt.Errorf("error while changing ref: %s", err)
+				return models.TestEnv{}, fmt.Errorf("error initializing git repository: %w", err)
 			}
 		}
 	}
