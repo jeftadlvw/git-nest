@@ -129,6 +129,12 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Url: urls.HttpUrl{"example.com", 443, "repository", true},
+			},
+			valid: true,
+		},
+		{
+			submodule: models.Submodule{
+				Url: urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref: "main",
 			},
 			valid: true,
@@ -144,7 +150,15 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "*foo",
-				Url:  urls.HttpUrl{},
+				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Ref:  "main",
+			},
+			valid: false,
+		},
+		{
+			submodule: models.Submodule{
+				Path: "fo*o",
+				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "main",
 			},
 			valid: false,
@@ -152,7 +166,15 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "!foo",
-				Url:  urls.HttpUrl{},
+				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Ref:  "main",
+			},
+			valid: false,
+		},
+		{
+			submodule: models.Submodule{
+				Path: "fo!o",
+				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "main",
 			},
 			valid: false,

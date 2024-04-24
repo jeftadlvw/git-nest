@@ -72,7 +72,7 @@ func (s *Submodule) Validate() error {
 
 	forbiddenCharacters := "!*"
 	for _, char := range forbiddenCharacters {
-		if strings.Contains(s.Path.String(), "*") {
+		if strings.Contains(s.Path.String(), string(char)) {
 			return fmt.Errorf("submodule path contains forbidden character '%c'", char)
 		}
 	}
