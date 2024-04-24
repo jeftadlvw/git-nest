@@ -36,20 +36,26 @@ func TestAddSubmoduleInContext(t *testing.T) {
 		{test_env.RepoUrl, "", "", []models.Submodule{}, true, false, true},
 		{test_env.RepoUrl, "", "", []models.Submodule{}, false, false, false},
 		{test_env.RepoUrl, testFile, "", []models.Submodule{}, false, false, true},
+		{test_env.RepoUrl, testFile + "/", "", []models.Submodule{}, false, false, true},
 		{test_env.RepoUrl, testDirEmpty, "", []models.Submodule{}, false, false, false},
+		{test_env.RepoUrl, testDirEmpty + "/", "", []models.Submodule{}, false, false, false},
 		{test_env.RepoUrl, testDirFull, "", []models.Submodule{}, false, false, true},
+		{test_env.RepoUrl, testDirFull + "/", "", []models.Submodule{}, false, false, false},
 		{test_env.RepoUrl, "../foo", "", []models.Submodule{}, false, false, true},
 		{test_env.RepoUrl, "foo/bar/../", "", []models.Submodule{}, false, false, false},
 		{test_env.RepoUrl, "foo/bar/..", "", []models.Submodule{}, false, false, false},
-		{test_env.RepoUrl, "foo/bar/../..", "", []models.Submodule{}, false, false, false},
+		{test_env.RepoUrl, "foo/bar/../..", "", []models.Submodule{}, false, false, true},
+		{test_env.RepoUrl, "foo/bar/../../", "", []models.Submodule{}, false, false, false},
 		{test_env.RepoUrl, "foo/bar/../../foo", "", []models.Submodule{}, false, false, false},
 		{test_env.RepoUrl, "foo", "", []models.Submodule{}, false, false, false},
 		{test_env.RepoUrl, "f!oo", "", []models.Submodule{}, false, false, true},
 		{test_env.RepoUrl, "f!oo", "", []models.Submodule{}, false, false, true},
 		{test_env.RepoUrl, "fo*o", "", []models.Submodule{}, false, false, true},
+		{test_env.RepoUrl, "/foo", "", []models.Submodule{}, false, false, true},
+		{test_env.RepoUrl, "/../foo", "", []models.Submodule{}, false, false, true},
 		{test_env.RepoUrl, "foo", test_env.RepoBranch1, []models.Submodule{}, false, false, false},
-		{test_env.RepoUrl, "", "", []models.Submodule{{"", testRepoUrl, ""}}, false, false, true},
-		{test_env.RepoUrl, "", "", []models.Submodule{{"", testRepoUrl, ""}}, false, true, true},
+		{test_env.RepoUrl, "", "", []models.Submodule{{"example-repository", testRepoUrl, ""}}, false, false, true},
+		{test_env.RepoUrl, "", "", []models.Submodule{{"example-repository", testRepoUrl, ""}}, false, true, true},
 		{test_env.RepoUrl, "", test_env.RepoBranch1, []models.Submodule{{"foo", testRepoUrl, ""}}, false, false, true},
 		{test_env.RepoUrl, "", test_env.RepoBranch1, []models.Submodule{{"foo", testRepoUrl, ""}}, false, true, false},
 		{test_env.RepoUrl, "", test_env.RepoBranch1, []models.Submodule{{"foo", testRepoUrl, test_env.RepoBranch1}}, false, true, false},
@@ -105,7 +111,7 @@ func TestAddSubmoduleInContext(t *testing.T) {
 			}
 
 			cloneDir := tc.cloneDir
-			err = actions.AddSubmoduleInContext(&context, url, cloneDir, tc.ref)
+			err = actions.AddSubmoduleInContext(&context, url, tc.ref, models.Path(cloneDir))
 
 			// check things
 			if tc.err && err == nil {
