@@ -33,7 +33,7 @@ func SubmoduleToTomlConfig(s models.Submodule, indent string) string {
 	sb.WriteString("[[submodule]]")
 	sb.WriteString("\n")
 
-	sb.WriteString(formatTomlKeyValue("path", s.Path.String(), indent))
+	sb.WriteString(formatTomlKeyValue("path", s.Path.UnixString(), indent))
 	sb.WriteString(formatTomlKeyValue("url", s.Url.String(), indent))
 
 	if s.Ref != "" {
