@@ -205,6 +205,10 @@ func pathCheck(p Path) int {
 		}
 	}
 
+	if fileInfo == nil {
+		return NO_EXIST
+	}
+
 	if fileInfo.IsDir() {
 		return DIR
 	}
