@@ -35,7 +35,7 @@ func CloneGitRepository(url string, p models.Path, cloneDirName string) error {
 
 	output, err := RunCommandCombinedOutput(p, "git", commandArgsArr...)
 	if err != nil {
-		return fmt.Errorf("error running git clone: %s; output: %s", err, output)
+		return fmt.Errorf("error running git clone: %w; output: %s", err, output)
 	}
 
 	if strings.Contains(output, "ERROR: Repository not found.") {
@@ -63,9 +63,6 @@ func ChangeGitHead(repository models.Path, head string) error {
 	}
 
 	output, err := RunCommandCombinedOutput(repository, "git", "checkout", head, "--progress")
-	if err != nil {
-		return fmt.Errorf("error running git checkout: %s; output: %s", err, output)
-	}
 
 	if strings.Contains(output, "fatal: not a git repository") {
 		return fmt.Errorf("%s is not a git repository", repository)
@@ -73,6 +70,10 @@ func ChangeGitHead(repository models.Path, head string) error {
 
 	if strings.Contains(output, "error: pathspec") {
 		return fmt.Errorf("head '%s' does not exist", head)
+	}
+
+	if err != nil {
+		return fmt.Errorf("error running git checkout: %w; output: %s", err, output)
 	}
 
 	return nil
@@ -88,7 +89,7 @@ func GetGitRootDirectory(d models.Path) (string, error) {
 
 	path, err := RunCommandCombinedOutput(d, "git", "rev-parse", "--show-toplevel")
 	if err != nil {
-		return "", fmt.Errorf("error running git rev-parse: %s; output: %s", err, path)
+		return "", fmt.Errorf("error running git rev-parse: %w; output: %s", err, path)
 	}
 
 	if strings.HasPrefix(path, "fatal:") {
@@ -108,7 +109,7 @@ func GetGitRemoteUrl(d models.Path) (string, error) {
 
 	path, err := RunCommandCombinedOutput(d, "git", "config", "--get", "remote.origin.url")
 	if err != nil {
-		return "", fmt.Errorf("error running git config: %s; output: %s", err, path)
+		return "", fmt.Errorf("error running git config: %w; output: %s", err, path)
 	}
 
 	if strings.HasPrefix(path, "fatal:") {
@@ -128,7 +129,7 @@ func GetGitFetchHead(d models.Path) (string, string, error) {
 
 	longHead, err := RunCommandCombinedOutput(d, "git", "rev-parse", "--verify", "HEAD")
 	if err != nil {
-		return "", "", fmt.Errorf("error running git rev-parse: %s; output: %s", err, longHead)
+		return "", "", fmt.Errorf("error running git rev-parse: %w; output: %s", err, longHead)
 	}
 
 	if strings.HasPrefix(longHead, "fatal:") {
@@ -137,7 +138,7 @@ func GetGitFetchHead(d models.Path) (string, string, error) {
 
 	abbrevHead, err := RunCommandCombinedOutput(d, "git", "rev-parse", "--abbrev-ref", "HEAD")
 	if err != nil {
-		return "", "", fmt.Errorf("error running git rev-parse: %s; output: %s", err, abbrevHead)
+		return "", "", fmt.Errorf("error running git rev-parse: %w; output: %s", err, abbrevHead)
 	}
 
 	if abbrevHead != "HEAD" {
