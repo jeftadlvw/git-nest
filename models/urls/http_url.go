@@ -93,6 +93,8 @@ func (u *HttpUrl) String() string {
 		return ""
 	}
 
+	u.Clean()
+
 	var scheme string
 
 	if u.Secure {
