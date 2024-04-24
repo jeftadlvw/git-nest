@@ -11,12 +11,11 @@ import (
 )
 
 /*
-CreateContext returns a fresh evaluated models.NestContext.
+CreateContext returns a fresh evaluated models.NestContext for the passed path.
 */
-func CreateContext() (models.NestContext, error) {
+func CreateContext(p models.Path) (models.NestContext, error) {
 
 	var (
-		cwd              models.Path
 		projectRoot      models.Path
 		configFileExists bool
 		configFilePath   models.Path
@@ -28,17 +27,14 @@ func CreateContext() (models.NestContext, error) {
 
 	nestContext := models.NestContext{}
 
-	// get cwd
-	cwdStr, err := os.Getwd()
-	if err != nil {
-		return nestContext, err
+	if !p.IsDir() {
+		return nestContext, fmt.Errorf("%s is not a directory", p.String())
 	}
-	cwd = models.Path(cwdStr)
 
 	// evaluate project root
-	projectRoot, err = FindProjectRoot(cwd)
+	projectRoot, err := FindProjectRoot(p)
 	if err != nil {
-		projectRoot = cwd
+		projectRoot = p
 	}
 
 	// evaluate configuration file path
@@ -77,11 +73,11 @@ func CreateContext() (models.NestContext, error) {
 		if gitRoot == projectRoot {
 			isGitProject = true
 		} else if !nestConfig.Config.AllowUnequalRoots {
-			_, _ = fmt.Fprintf(os.Stderr, "git-nest root and git repository root directories do not match:%s != %s", gitRoot.String(), projectRoot.String())
+			_, _ = fmt.Fprintf(os.Stderr, "git-nest root and git repository root directories do not match: %s != %s\n", gitRoot.String(), projectRoot.String())
 		}
 	}
 
-	nestContext.WorkingDirectory = cwd
+	nestContext.WorkingDirectory = p
 	nestContext.ProjectRoot = projectRoot
 	nestContext.ConfigFileExists = configFileExists
 	nestContext.ConfigFile = configFilePath
@@ -91,6 +87,19 @@ func CreateContext() (models.NestContext, error) {
 	nestContext.GitRepositoryRoot = gitRoot
 
 	return nestContext, nil
+}
+
+/*
+CreateContextFromCurrentWorkingDir returns a fresh evaluated models.NestContext from the current working directory.
+*/
+func CreateContextFromCurrentWorkingDir() (models.NestContext, error) {
+	cwdStr, err := os.Getwd()
+	if err != nil {
+		return models.NestContext{}, err
+	}
+	cwd := models.Path(cwdStr)
+
+	return CreateContext(cwd)
 }
 
 /*
