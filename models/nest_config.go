@@ -60,9 +60,8 @@ func (c NestConfig) Validate() error {
 CheckForDuplicateSubmodules syntactically checks if any duplicate submodules exist within a slice of Submodule.
 */
 func CheckForDuplicateSubmodules(allowDuplicateOrigins bool, submodules ...Submodule) error {
-	var added bool
-
 	var (
+		added         bool
 		identifierSet = mapset.NewSet[string]()
 		pathSet       = mapset.NewSet[string]()
 		remoteUrlSet  = mapset.NewSet[string]()
