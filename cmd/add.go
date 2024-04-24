@@ -5,6 +5,7 @@ import (
 	"github.com/jeftadlvw/git-nest/actions"
 	cmdInternal "github.com/jeftadlvw/git-nest/cmd/internal"
 	"github.com/jeftadlvw/git-nest/internal"
+	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/models/urls"
 	"github.com/spf13/cobra"
 	"strings"
@@ -33,11 +34,11 @@ func wrap(args []string) {
 	}
 }
 
-func argsToParams(args []string) (urls.HttpUrl, string, string, error) {
+func argsToParams(args []string) (urls.HttpUrl, string, models.Path, error) {
 	var (
 		url      urls.HttpUrl
 		ref      string
-		cloneDir string
+		cloneDir models.Path
 	)
 
 	var argLen = len(args)
@@ -50,16 +51,16 @@ func argsToParams(args []string) (urls.HttpUrl, string, string, error) {
 		url = u
 	}
 	if argLen >= 2 {
-		cloneDir = strings.TrimSpace(args[1])
+		ref = strings.TrimSpace(args[1])
 	}
 	if argLen >= 3 {
-		ref = strings.TrimSpace(args[2])
+		cloneDir = models.Path(strings.TrimSpace(args[2]))
 	}
 
 	return url, ref, cloneDir, nil
 }
 
-func addSubmodule(url urls.HttpUrl, ref string, cloneDir string) error {
+func addSubmodule(url urls.HttpUrl, ref string, cloneDir models.Path) error {
 
 	// read context
 	// current configuration might have some errors which will be needed to fix first
