@@ -70,6 +70,10 @@ Validate performs validation on this Submodule.
 func (s *Submodule) Validate() error {
 	s.Clean()
 
+	if s.Path.EmptyOrAtRoot() {
+		return fmt.Errorf("submodule path must be set")
+	}
+
 	forbiddenCharacters := "!*"
 	for _, char := range forbiddenCharacters {
 		if strings.Contains(s.Path.String(), string(char)) {

@@ -128,14 +128,16 @@ func TestSubmoduleValidate(t *testing.T) {
 	}{
 		{
 			submodule: models.Submodule{
-				Url: urls.HttpUrl{"example.com", 443, "repository", true},
+				Path: "foo",
+				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
 			},
 			valid: true,
 		},
 		{
 			submodule: models.Submodule{
-				Url: urls.HttpUrl{"example.com", 443, "repository", true},
-				Ref: "main",
+				Path: "foo",
+				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Ref:  "main",
 			},
 			valid: true,
 		},
@@ -204,13 +206,13 @@ func TestSubmoduleValidate(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for index, test := range tests {
 		err := test.submodule.Validate()
 		if test.valid && err != nil {
-			t.Errorf("Validation failed for valid submodule: %v", err)
+			t.Errorf("Validation failed for case %d: %v", index+1, err)
 		}
 		if !test.valid && err == nil {
-			t.Error("Validation passed for invalid submodule")
+			t.Errorf("Validation passed for case %d", index+1)
 		}
 	}
 }

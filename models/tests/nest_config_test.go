@@ -23,20 +23,6 @@ func TestNestConfigValidate(t *testing.T) {
 			err: false,
 		},
 
-		// one submodule; valid
-		{
-			name: "one submodule",
-			config: models.NestConfig{
-				Config: models.Config{},
-				Submodules: []models.Submodule{
-					{
-						Url: urls.HttpUrl{"example.com", 443, "", true},
-					},
-				},
-			},
-			err: false,
-		},
-
 		// one submodule with path; valid
 		{
 			name: "one submodule with path",
