@@ -15,6 +15,12 @@ const (
 	SUBMODULE_EXISTS_ERR_HEAD     = iota
 )
 
+type SubmoduleExistsMapValue struct {
+	Status  int
+	Payload string
+	Error   error
+}
+
 /*
 SubmoduleExists returns whether and in what state a possible submodule exists.
 */
@@ -48,6 +54,7 @@ func SubmoduleExists(s models.Submodule, root models.Path) (int, string, error) 
 	if err != nil {
 		returnFlag = SUBMODULE_EXISTS_ERR_HEAD
 		returnErr = err
+		return returnFlag, returnPayload, returnErr
 	}
 
 	if len(remoteRef) == 0 {
@@ -63,4 +70,24 @@ func SubmoduleExists(s models.Submodule, root models.Path) (int, string, error) 
 	}
 
 	return returnFlag, returnPayload, returnErr
+}
+
+/*
+SubmodulesExist takes multiple submodules and verifies their existence in bulk
+*/
+func SubmodulesExist(submodules []models.Submodule, root models.Path) []SubmoduleExistsMapValue {
+
+	var existMapping []SubmoduleExistsMapValue
+
+	for _, submodule := range submodules {
+		status, payload, err := SubmoduleExists(submodule, root)
+		existMapping = append(existMapping, SubmoduleExistsMapValue{
+			Status:  status,
+			Payload: payload,
+			Error:   err,
+		})
+	}
+
+	return existMapping
+
 }
