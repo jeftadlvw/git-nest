@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"errors"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/utils"
 	"strings"
@@ -90,4 +91,31 @@ func SubmodulesExist(submodules []models.Submodule, root models.Path) []Submodul
 
 	return existMapping
 
+}
+
+func FmtSubmoduleExistOutput(status int, payload string, err error) (string, error) {
+	existStr := ""
+
+	switch status {
+	case SUBMODULE_EXISTS_OK:
+		existStr = "ok"
+	case SUBMODULE_EXISTS_ERR_NO_EXIST:
+		existStr = "no exist"
+	case SUBMODULE_EXISTS_ERR_FILE:
+		existStr = "error: path is a file"
+	case SUBMODULE_EXISTS_ERR_NO_GIT:
+		existStr = "error: git not installed"
+	case SUBMODULE_EXISTS_ERR_REMOTE:
+		existStr = "error: unequal remote urls: " + payload
+	case SUBMODULE_EXISTS_ERR_HEAD:
+		if err != nil {
+			existStr = "error: unable to fetch HEAD: " + err.Error()
+		} else {
+			existStr = "error: unequal ref HEADs: " + payload
+		}
+	default:
+		return "", errors.New("invalid exist state")
+	}
+
+	return existStr, nil
 }
