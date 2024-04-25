@@ -8,24 +8,26 @@ import (
 func TestFmtTree(t *testing.T) {
 
 	cases := []struct {
-		indent   string
+		config   utils.FmtTreeConfig
 		tree     []utils.Node
 		expected string
 	}{
-		{"", []utils.Node{}, ""},
-		{"  ", []utils.Node{}, ""},
-		{"", []utils.Node{{"Foo", "foo"}, {"Bar", 123}}, "Foo:   foo\nBar:   123"},
-		{"", []utils.Node{{"Foo", "foo"}, {"BarLong", 123}}, "Foo:       foo\nBarLong:   123"},
-		{"  ", []utils.Node{{"Foo", "foo"}, {"Bar", 123}}, "Foo:   foo\nBar:   123"},
-		{"", []utils.Node{{"Foo", []int{1, 2, 3}}}, "Foo:   [1 2 3]"},
-		{"", []utils.Node{{"Foo", []interface{}{1, 2, "hi"}}}, "Foo:   [1 2 hi]"},
-		{"   ", []utils.Node{{"Foo", []utils.Node{{"Bar", 0.34}, {"Baz", "baz"}}}}, "Foo:\n   Bar:   0.34\n   Baz:   baz"},
+		{utils.FmtTreeConfig{Indent: ""}, []utils.Node{}, ""},
+		{utils.FmtTreeConfig{Indent: "  "}, []utils.Node{}, ""},
+		{utils.FmtTreeConfig{Indent: ""}, []utils.Node{{"Foo", "foo"}, {"Bar", 123}}, "Foo:   foo\nBar:   123"},
+		{utils.FmtTreeConfig{Indent: ""}, []utils.Node{{"Foo", "foo"}, {"BarLong", 123}}, "Foo:       foo\nBarLong:   123"},
+		{utils.FmtTreeConfig{Indent: "  "}, []utils.Node{{"Foo", "foo"}, {"Bar", 123}}, "Foo:   foo\nBar:   123"},
+		{utils.FmtTreeConfig{Indent: "  ", NewLinesAtTopLevel: true}, []utils.Node{{"Foo", "foo"}, {"Bar", 123}}, "Foo:   foo\n\nBar:   123"},
+		{utils.FmtTreeConfig{Indent: ""}, []utils.Node{{"Foo", []int{1, 2, 3}}}, "Foo:   [1 2 3]"},
+		{utils.FmtTreeConfig{Indent: ""}, []utils.Node{{"Foo", []interface{}{1, 2, "hi"}}}, "Foo:   [1 2 hi]"},
+		{utils.FmtTreeConfig{Indent: "   "}, []utils.Node{{"Foo", []utils.Node{{"Bar", 0.34}, {"Baz", "baz"}}}, {"Noc", "noc"}}, "Foo:\n   Bar:   0.34\n   Baz:   baz\nNoc:   noc"},
+		{utils.FmtTreeConfig{Indent: "   ", NewLinesAtTopLevel: true}, []utils.Node{{"Foo", []utils.Node{{"Bar", 0.34}, {"Baz", "baz"}}}, {"Noc", "noc"}}, "Foo:\n   Bar:   0.34\n   Baz:   baz\n\nNoc:   noc"},
 	}
 
-	for _, tc := range cases {
-		output := utils.FmtTree(tc.indent, true, tc.tree...)
+	for index, tc := range cases {
+		output := utils.FmtTree(tc.config, tc.tree...)
 		if output != tc.expected {
-			t.Errorf("FmtTree() for %v returned unexpected results:\nExpected:\n>%s<\n\nGot:\n>%s<", tc.indent, tc.expected, output)
+			t.Errorf("FmtTree() for case %d returned unexpected results:\nExpected:\n>%s<\n\nGot:\n>%s<", index+1, tc.expected, output)
 		}
 	}
 

@@ -99,13 +99,13 @@ func printDebugInformation(redact bool) {
 		}},
 	}
 
-	for _, node := range infoMap {
-		fmt.Printf(utils.FmtTree("   ", true, node))
-		fmt.Printf("\n\n")
-	}
+	fmt.Println(utils.FmtTree(utils.FmtTreeConfig{
+		Indent:             "   ",
+		NewLinesAtTopLevel: true,
+	}, infoMap...))
 
 	// estimate if binary is local dev build
 	if strings.HasPrefix(constants.Version(), "[") || constants.Ref() == "unset" || constants.CompilationTimestamp() == -1 {
-		fmt.Printf("This binary is most likely a local development built.\n")
+		fmt.Printf("\nThis binary is most likely a local development built.\n")
 	}
 }
