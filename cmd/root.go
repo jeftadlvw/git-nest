@@ -37,6 +37,7 @@ func configureRootCommand(rootCmd *cobra.Command) {
 	rootCmd.AddCommand(createInfoCmd())
 	rootCmd.AddCommand(createAddCmd())
 	rootCmd.AddCommand(createListCmd())
+	rootCmd.AddCommand(createVerifyCmd())
 
 	// miscellaneous configuration
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
