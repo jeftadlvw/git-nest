@@ -14,15 +14,15 @@ import (
 func createAddCmd() *cobra.Command {
 	var infoCmd = &cobra.Command{
 		Use:   "add url [ref] [location]",
-		Short: "Adds and clones a remote submodule into this project",
-		Run:   cmdInternal.RunWrapper(wrap, cmdInternal.ArgMinN(1), cmdInternal.ArgMaxN(3)),
+		Short: "Add and clone a remote submodule into this project",
+		Run:   cmdInternal.RunWrapper(wrapAddSubmodule, cmdInternal.ArgMinN(1), cmdInternal.ArgMaxN(3)),
 	}
 
 	return infoCmd
 }
 
-func wrap(args []string) {
-	url, ref, cloneDir, err := argsToParams(args)
+func wrapAddSubmodule(args []string) {
+	url, ref, cloneDir, err := argsToParamsAddSubmodule(args)
 	if err != nil {
 		fmt.Printf("fatal: argument validation: %s\n", err)
 		return
@@ -34,7 +34,7 @@ func wrap(args []string) {
 	}
 }
 
-func argsToParams(args []string) (urls.HttpUrl, string, models.Path, error) {
+func argsToParamsAddSubmodule(args []string) (urls.HttpUrl, string, models.Path, error) {
 	var (
 		url      urls.HttpUrl
 		ref      string
@@ -63,8 +63,6 @@ func argsToParams(args []string) (urls.HttpUrl, string, models.Path, error) {
 func addSubmodule(url urls.HttpUrl, ref string, cloneDir models.Path) error {
 
 	// read context
-	// current configuration might have some errors which will be needed to fix first
-	// if no error, defer writing context
 	context, err := internal.EvaluateContext()
 	if err != nil {
 		return fmt.Errorf("internal context error: %w.\nPlease fix any configuration errors to proceed", err)
