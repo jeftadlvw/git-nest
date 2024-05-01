@@ -7,7 +7,7 @@ import (
 func ArgExactN(n int) func(c int) error {
 	return func(c int) error {
 		if c != n {
-			return fmt.Errorf("exaclty %d argument%s allowed", n, pluralS(n))
+			return fmt.Errorf("exactly %d argument%s allowed", n, pluralS(n))
 		}
 
 		return nil
