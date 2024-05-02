@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+	"github.com/jeftadlvw/git-nest/internal"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/models/urls"
 	"github.com/jeftadlvw/git-nest/utils"
@@ -23,7 +24,6 @@ func AddSubmoduleInContext(context *models.NestContext, url urls.HttpUrl, ref st
 	}
 
 	var relativeToRoot = cloneDir
-	var calcRelativeTo models.Path
 	var absolutePath models.Path
 	var repositoryName = strings.TrimSuffix(filepath.Base(url.String()), ".git")
 
@@ -36,22 +36,13 @@ func AddSubmoduleInContext(context *models.NestContext, url urls.HttpUrl, ref st
 		cloneDir = models.Path(repositoryName)
 	}
 
-	// check if cloneDir is absolute
-	// if cloneDir is absolute, then calculate relative to project root
-	// else, expect cloneDir to be relative to cwd, so join it with cwd and then calculate relative path to project root
-	if filepath.IsAbs(cloneDir.String()) {
-		calcRelativeTo = cloneDir
-	} else {
-		calcRelativeTo = context.WorkingDirectory.Join(cloneDir)
-	}
-
-	relativeToRoot, err = context.ProjectRoot.Relative(calcRelativeTo)
+	relativeToRoot, err = internal.PathRelativeToRootButOtherOriginIfNotAbs(context.ProjectRoot, context.WorkingDirectory, cloneDir)
 	if err != nil {
 		return fmt.Errorf("internal error: could not find relative to project root: %w", err)
 	}
 
 	// check if relative path escapes project root
-	if strings.Contains(relativeToRoot.String(), "..") {
+	if internal.PathContainsUp(relativeToRoot) {
 		return fmt.Errorf("validation error: %s escapes the project root", cloneDir)
 	}
 
