@@ -18,7 +18,7 @@ It takes a runner function and an argument count validation function. If the lat
 is not nil, it is executed first and checked for returned errors. If no errors
 were returned, the runner function is executed.
 */
-func RunWrapper(run func(args []string), validateArgCount ...func(c int) error) func(cmd *cobra.Command, args []string) {
+func RunWrapper(run func(cmd *cobra.Command, args []string), validateArgCount ...func(c int) error) func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
 		if validateArgCount != nil {
 
@@ -31,6 +31,6 @@ func RunWrapper(run func(args []string), validateArgCount ...func(c int) error) 
 			}
 		}
 
-		run(args)
+		run(cmd, args)
 	}
 }
