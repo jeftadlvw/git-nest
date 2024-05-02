@@ -28,13 +28,11 @@ func PathOutsideRoot(root models.Path, p models.Path) bool {
 }
 
 /*
-PathRelativeToRootButOtherOriginIfNotAbs is a somewhat complicated function.
+PathRelativeToRootWithJoinedOriginIfNotAbs is a somewhat complicated function.
 It calculates the relative path between root and p if p is an absolute path.
 But in case p is not absolute, it is first joined on the origin path.
-
-TODO: improve this function name.
 */
-func PathRelativeToRootButOtherOriginIfNotAbs(root models.Path, origin models.Path, p models.Path) (models.Path, error) {
+func PathRelativeToRootWithJoinedOriginIfNotAbs(root models.Path, origin models.Path, p models.Path) (models.Path, error) {
 	var (
 		err            error
 		comparePath    models.Path

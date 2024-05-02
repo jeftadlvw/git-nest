@@ -36,7 +36,7 @@ func AddSubmoduleInContext(context *models.NestContext, url urls.HttpUrl, ref st
 		cloneDir = models.Path(repositoryName)
 	}
 
-	relativeToRoot, err = internal.PathRelativeToRootButOtherOriginIfNotAbs(context.ProjectRoot, context.WorkingDirectory, cloneDir)
+	relativeToRoot, err = internal.PathRelativeToRootWithJoinedOriginIfNotAbs(context.ProjectRoot, context.WorkingDirectory, cloneDir)
 	if err != nil {
 		return fmt.Errorf("internal error: could not find relative to project root: %w", err)
 	}

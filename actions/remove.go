@@ -14,7 +14,7 @@ RemoveSubmoduleFromContext is a high-level wrapper that removes a submodule from
 */
 func RemoveSubmoduleFromContext(context *models.NestContext, p models.Path, removeDir bool, forceDelete bool) error {
 
-	relativeToRoot, err := internal.PathRelativeToRootButOtherOriginIfNotAbs(context.ProjectRoot, context.WorkingDirectory, p)
+	relativeToRoot, err := internal.PathRelativeToRootWithJoinedOriginIfNotAbs(context.ProjectRoot, context.WorkingDirectory, p)
 	if err != nil {
 		return fmt.Errorf("internal error: could not find relative to project root: %w", err)
 	}
