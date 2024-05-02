@@ -175,7 +175,7 @@ func TestGetGitRootDirectory(t *testing.T) {
 				}
 			}
 
-			remoteUrl, err := utils.GetGitRootDirectory(repoDir)
+			rootDir, err := utils.GetGitRootDirectory(repoDir)
 			if tc.err && err == nil {
 				t.Errorf("GetGitRootDirectory() for case %d returned no error but expected one", index+1)
 				return
@@ -184,8 +184,8 @@ func TestGetGitRootDirectory(t *testing.T) {
 				t.Errorf("GetGitRootDirectory() for case %d returned error, but should've not -> %s", index+1, err)
 				return
 			}
-			if remoteUrl != expectDir {
-				t.Errorf("GetGitRootDirectory() for case %d returned unexpected remote: >%s<, expected >%s<,", index+1, remoteUrl, expectDir)
+			if rootDir != expectDir {
+				t.Errorf("GetGitRootDirectory() for case %d returned unexpected remote: >%s<, expected >%s<,", index+1, rootDir, expectDir)
 			}
 		})
 	}
@@ -295,6 +295,156 @@ func TestGetGitFetchHead(t *testing.T) {
 			}
 			if headRefAbbrev != tc.expectedAbbrev {
 				t.Errorf("GetGitFetchHead() for case %d returned unexpected abbreviation: >%s<, expected >%s<,", index+1, headRefAbbrev, tc.expectedAbbrev)
+			}
+		})
+	}
+}
+
+func TestGetGitHasUntrackedChanges(t *testing.T) {
+	t.Parallel()
+
+	const testFileName = "test.txt"
+
+	cases := []struct {
+		dir            models.Path
+		useExampleRepo bool
+		createFile     bool
+		commitFile     bool
+		expected       bool
+		err            bool
+	}{
+		{"", false, false, false, true, true},
+		{"   ", false, false, false, true, true},
+		{nonExistingDir, false, false, false, true, true},
+		{"", true, false, false, false, false},
+		{"", true, true, false, true, false},
+		{"", true, true, true, false, false},
+	}
+
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("GetGitHasUntrackedChanges-%d", index+1), func(t *testing.T) {
+			t.Parallel()
+			repoDir := tc.dir
+
+			if tc.useExampleRepo {
+				envSettings := test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"}
+				testEnv, err := test_env.CreateTestEnvironment(envSettings)
+				if err != nil {
+					t.Fatalf("error creating test environment for case %d: %s", index+1, err)
+					return
+				}
+				defer testEnv.Destroy()
+				repoDir = testEnv.Dir.SJoin("temp")
+
+				if tc.createFile {
+					err = utils.WriteStrToFile(repoDir.SJoin(testFileName), "")
+					if err != nil {
+						t.Fatalf("error writing test file for case %d: %s", index+1, err)
+						return
+					}
+
+					if tc.commitFile {
+						out, err := utils.RunCommandCombinedOutput(repoDir, "git", "add", testFileName)
+						if err != nil {
+							t.Fatalf("error git-adding test file for case %d: %s; %s", index+1, err, out)
+							return
+						}
+
+						out, err = utils.RunCommandCombinedOutput(repoDir, "git", "commit", "-m", "\"added test.txt\"")
+						if err != nil {
+							t.Fatalf("error git-commiting test file for case %d: %s; %s", index+1, err, out)
+							return
+						}
+					}
+				}
+			}
+
+			hasUntrackedChanges, err := utils.GetGitHasUntrackedChanges(repoDir)
+			if tc.err && err == nil {
+				t.Errorf("GetGitHasUntrackedChanges() for case %d returned no error but expected one", index+1)
+				return
+			}
+			if !tc.err && err != nil {
+				t.Errorf("GetGitHasUntrackedChanges() for case %d returned error, but should've not -> %s", index+1, err)
+				return
+			}
+			if hasUntrackedChanges != tc.expected {
+				t.Errorf("GetGitHasUntrackedChanges() for case %d returned %t (should be %t)", index+1, hasUntrackedChanges, tc.expected)
+			}
+		})
+	}
+}
+
+func TestGetGitHasUnpublishedChanges(t *testing.T) {
+	t.Parallel()
+
+	const testFileName = "test.txt"
+
+	cases := []struct {
+		dir            models.Path
+		useExampleRepo bool
+		createFile     bool
+		commitFile     bool
+		expected       bool
+		err            bool
+	}{
+		{"", false, false, false, true, true},
+		{"   ", false, false, false, true, true},
+		{nonExistingDir, false, false, false, true, true},
+		{"", true, false, false, false, false},
+		{"", true, true, false, false, false},
+		{"", true, true, true, true, false},
+	}
+
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("GetGitHasUnpublishedChanges-%d", index+1), func(t *testing.T) {
+			t.Parallel()
+			repoDir := tc.dir
+
+			if tc.useExampleRepo {
+				envSettings := test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"}
+				testEnv, err := test_env.CreateTestEnvironment(envSettings)
+				if err != nil {
+					t.Fatalf("error creating test environment for case %d: %s", index+1, err)
+					return
+				}
+				defer testEnv.Destroy()
+				repoDir = testEnv.Dir.SJoin("temp")
+
+				if tc.createFile {
+					err = utils.WriteStrToFile(repoDir.SJoin(testFileName), "")
+					if err != nil {
+						t.Fatalf("error writing test file for case %d: %s", index+1, err)
+						return
+					}
+
+					if tc.commitFile {
+						out, err := utils.RunCommandCombinedOutput(repoDir, "git", "add", testFileName)
+						if err != nil {
+							t.Fatalf("error git-adding test file for case %d: %s; %s", index+1, err, out)
+							return
+						}
+
+						out, err = utils.RunCommandCombinedOutput(repoDir, "git", "commit", "-m", "\"added test.txt\"")
+						if err != nil {
+							t.Fatalf("error git-commiting test file for case %d: %s; %s", index+1, err, out)
+							return
+						}
+					}
+				}
+			}
+
+			hasUnpublishedChanges, err := utils.GetGitHasUnpublishedChanges(repoDir)
+			if tc.err && err == nil {
+				t.Errorf("GetGitHasUnpublishedChanges() for case %d returned no error but expected one", index+1)
+				return
+			}
+			if !tc.err && err != nil {
+				t.Errorf("GetGitHasUnpublishedChanges() for case %d returned error, but should've not -> %s", index+1, err)
+				return
+			}
+			if hasUnpublishedChanges != tc.expected {
+				t.Errorf("GetGitHasUnpublishedChanges() for case %d returned %t (should be %t)", index+1, hasUnpublishedChanges, tc.expected)
 			}
 		})
 	}
