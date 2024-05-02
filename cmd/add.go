@@ -12,16 +12,16 @@ import (
 )
 
 func createAddCmd() *cobra.Command {
-	var infoCmd = &cobra.Command{
+	var addCmd = &cobra.Command{
 		Use:   "add url [ref] [location]",
 		Short: "Add and clone a remote submodule into this project",
 		Run:   cmdInternal.RunWrapper(wrapAddSubmodule, cmdInternal.ArgMinN(1), cmdInternal.ArgMaxN(3)),
 	}
 
-	return infoCmd
+	return addCmd
 }
 
-func wrapAddSubmodule(args []string) {
+func wrapAddSubmodule(cmd *cobra.Command, args []string) {
 	url, ref, cloneDir, err := argsToParamsAddSubmodule(args)
 	if err != nil {
 		fmt.Printf("fatal: argument validation: %s\n", err)
