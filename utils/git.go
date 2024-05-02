@@ -165,6 +165,10 @@ GetGitHasUntrackedChanges returns whether a local repository has uncommitted cha
 In case of any errors, true is returned.
 */
 func GetGitHasUntrackedChanges(d models.Path) (bool, error) {
+	if d.Empty() {
+		return true, errors.New("path to repository may not be empty")
+	}
+
 	out, err := RunCommandCombinedOutput(d, "git", "status", "--porcelain=v1")
 	if err != nil {
 		return true, err
@@ -180,7 +184,7 @@ func GetGitHasUntrackedChanges(d models.Path) (bool, error) {
 		return true, fmt.Errorf("git error: %s", out)
 	}
 
-	return strings.TrimSpace(out) == "", nil
+	return strings.TrimSpace(out) != "", nil
 }
 
 /*
@@ -188,6 +192,10 @@ GetGitHasUnpublishedChanges returns whether a local repository has unpushed comm
 In case of any errors, true is returned.
 */
 func GetGitHasUnpublishedChanges(d models.Path) (bool, error) {
+	if d.Empty() {
+		return true, errors.New("path to repository may not be empty")
+	}
+
 	out, err := RunCommandCombinedOutput(d, "git", "status")
 	if err != nil {
 		return true, err
