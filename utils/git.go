@@ -132,8 +132,8 @@ func GetGitFetchHead(d models.Path) (string, string, error) {
 		return "", "", fmt.Errorf("error running git rev-parse: %w; output: %s", err, longHead)
 	}
 
-	if strings.HasPrefix(longHead, "fatal:") {
-		return "", "", errors.New("git root not found")
+	if strings.HasPrefix(longHead, "fatal: not a git repository") {
+		return "", "", errors.New("no git repository")
 	}
 
 	abbrevHead, err := RunCommandCombinedOutput(d, "git", "rev-parse", "--abbrev-ref", "HEAD")
@@ -158,4 +158,50 @@ func GetGitVersion() (string, error) {
 	}
 
 	return strings.TrimSpace(string(version)), nil
+}
+
+/*
+GetGitHasUncommittedChanges returns whether a local repository has uncommitted changes.
+In case of any errors, true is returned.
+*/
+func GetGitHasUncommittedChanges(d models.Path) (bool, error) {
+	out, err := RunCommandCombinedOutput(d, "git", "status", "--porcelain=v1")
+	if err != nil {
+		return true, err
+	}
+
+	// if not a repository, then return false
+	if strings.HasPrefix(out, "fatal: not a git repository") {
+		return false, nil
+	}
+
+	// in case another error occurs, return it
+	if strings.HasPrefix(out, "fatal:") {
+		return true, fmt.Errorf("git error: %s", out)
+	}
+
+	return strings.TrimSpace(out) == "", nil
+}
+
+/*
+GetGitHasUnpushedCommits returns whether a local repository has unpushed commits.
+In case of any errors, true is returned.
+*/
+func GetGitHasUnpushedCommits(d models.Path) (bool, error) {
+	out, err := RunCommandCombinedOutput(d, "git", "status")
+	if err != nil {
+		return true, err
+	}
+
+	// if not a repository, then return false
+	if strings.HasPrefix(out, "fatal: not a git repository") {
+		return false, nil
+	}
+
+	// in case another error occurs, return it
+	if strings.HasPrefix(out, "fatal:") {
+		return true, fmt.Errorf("git error: %s", out)
+	}
+
+	return strings.Contains(out, "(use \"git push\" to publish your local commits)"), nil
 }
