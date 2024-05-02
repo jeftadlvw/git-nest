@@ -161,10 +161,10 @@ func GetGitVersion() (string, error) {
 }
 
 /*
-GetGitHasUncommittedChanges returns whether a local repository has uncommitted changes.
+GetGitHasUntrackedChanges returns whether a local repository has uncommitted changes.
 In case of any errors, true is returned.
 */
-func GetGitHasUncommittedChanges(d models.Path) (bool, error) {
+func GetGitHasUntrackedChanges(d models.Path) (bool, error) {
 	out, err := RunCommandCombinedOutput(d, "git", "status", "--porcelain=v1")
 	if err != nil {
 		return true, err
@@ -184,10 +184,10 @@ func GetGitHasUncommittedChanges(d models.Path) (bool, error) {
 }
 
 /*
-GetGitHasUnpushedCommits returns whether a local repository has unpushed commits.
+GetGitHasUnpublishedChanges returns whether a local repository has unpushed commits.
 In case of any errors, true is returned.
 */
-func GetGitHasUnpushedCommits(d models.Path) (bool, error) {
+func GetGitHasUnpublishedChanges(d models.Path) (bool, error) {
 	out, err := RunCommandCombinedOutput(d, "git", "status")
 	if err != nil {
 		return true, err

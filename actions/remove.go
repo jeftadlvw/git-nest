@@ -48,24 +48,26 @@ func RemoveSubmoduleFromContext(context *models.NestContext, p models.Path, remo
 			return fmt.Errorf("submodule directry at %s is not empty.\nUse git-nest rm [path] -d to remove it.", p)
 		}
 
-		// check if repository has untracked changes
-		hasUncommittedChanges, err := utils.GetGitHasUncommittedChanges(absolutePath)
-		if err != nil {
-			return fmt.Errorf("internal error: could not check if uncommitted changes exist: %w", err)
-		}
+		if context.IsGitInstalled {
+			// check if repository has untracked changes
+			hasUntrackedChanges, err := utils.GetGitHasUntrackedChanges(absolutePath)
+			if err != nil {
+				return fmt.Errorf("internal error: could not check if uncommitted changes exist: %w", err)
+			}
 
-		if hasUncommittedChanges && !forceDelete {
-			return fmt.Errorf("submodule repository at %s contains uncommitted changes.\nCommit and push your changes or use git-nest rm [path] -df to forcefully remove it.", p)
-		}
+			if hasUntrackedChanges && !forceDelete {
+				return fmt.Errorf("submodule repository at %s contains uncommitted changes.\nCommit and push your changes or use git-nest rm [path] -df to forcefully remove it.", p)
+			}
 
-		// check if repository has unpublished changes
-		hasUnpushedCommits, err := utils.GetGitHasUnpushedCommits(absolutePath)
-		if err != nil {
-			return fmt.Errorf("internal error: could not check if unpushed commits exist: %w", err)
-		}
+			// check if repository has unpublished changes
+			hasUnpublishedChanges, err := utils.GetGitHasUnpublishedChanges(absolutePath)
+			if err != nil {
+				return fmt.Errorf("internal error: could not check if unpushed commits exist: %w", err)
+			}
 
-		if hasUnpushedCommits && !forceDelete {
-			return fmt.Errorf("submodule repository at %s has unpushed commits.\nPush your changes or use git-nest rm [path] -df to forcefully remove it.", p)
+			if hasUnpublishedChanges && !forceDelete {
+				return fmt.Errorf("submodule repository at %s has unpushed commits.\nPush your changes or use git-nest rm [path] -df to forcefully remove it.", p)
+			}
 		}
 
 		// delete directory
