@@ -11,6 +11,7 @@ import (
 
 /*
 RemoveSubmoduleFromContext is a high-level wrapper that removes a submodule from the context.
+It also removes any existing directories if there are no changes (unless forced).
 */
 func RemoveSubmoduleFromContext(context *models.NestContext, p models.Path, removeDir bool, forceDelete bool) error {
 
@@ -32,14 +33,14 @@ func RemoveSubmoduleFromContext(context *models.NestContext, p models.Path, remo
 	// check if passed submodule exists in context
 	var removeIndex int = -1
 	for i, submodule := range context.Config.Submodules {
-		if submodule.Path.String() == absolutePath.String() {
+		if submodule.Path.String() == relativeToRoot.String() {
 			removeIndex = i
 		}
 	}
 
 	// return error if no match found
 	if removeIndex == -1 {
-		return fmt.Errorf("passed submodule does not exist")
+		return fmt.Errorf("passed submodule does not exist: %s", relativeToRoot)
 	}
 
 	// check if directory exists
@@ -78,7 +79,7 @@ func RemoveSubmoduleFromContext(context *models.NestContext, p models.Path, remo
 	}
 
 	// remove submodule from submodule slice
-	context.Config.Submodules = slices.Delete(context.Config.Submodules, removeIndex+1, removeIndex+2)
+	context.Config.Submodules = slices.Delete(context.Config.Submodules, removeIndex, removeIndex+1)
 
 	return nil
 }
