@@ -12,7 +12,7 @@ func createVerifyCmd() *cobra.Command {
 	var listCmd = &cobra.Command{
 		Use:     "verify",
 		Aliases: []string{"v"},
-		Short:   "Verify configuration and submodules",
+		Short:   "Verify configuration and nested modules",
 		Run: func(cmd *cobra.Command, args []string) {
 			verifyConfigAndSubmodules()
 		},

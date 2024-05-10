@@ -23,7 +23,6 @@ were returned, the runner function is executed.
 func RunWrapper(run func(cmd *cobra.Command, args []string), validateArgCount ...func(c int) error) func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
 		if validateArgCount != nil {
-
 			for _, validationFunc := range validateArgCount {
 				err := validationFunc(len(args))
 				if err != nil {
