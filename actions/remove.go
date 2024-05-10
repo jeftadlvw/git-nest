@@ -78,11 +78,11 @@ func RemoveSubmoduleFromContext(context *models.NestContext, p models.Path, remo
 			}
 		}
 
-		migrationChain.Add(&fs.DeleteDirectory{Path: absolutePath})
+		migrationChain.Add(fs.DeleteDirectory{Path: absolutePath})
 	}
 
 	// remove submodule from context
-	migrationChain.Add(&mcontext.RemoveSubmodule{Context: context, SubmoduleIndex: removeIndex})
+	migrationChain.Add(mcontext.RemoveSubmodule{Context: context, SubmoduleIndex: removeIndex})
 
 	return migrationChain.Migrations(), nil
 }
