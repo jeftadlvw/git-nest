@@ -2,6 +2,8 @@ package internal
 
 import (
 	"fmt"
+	"github.com/jeftadlvw/git-nest/internal"
+	"github.com/jeftadlvw/git-nest/models"
 	"github.com/spf13/cobra"
 )
 
@@ -33,4 +35,17 @@ func RunWrapper(run func(cmd *cobra.Command, args []string), validateArgCount ..
 
 		run(cmd, args)
 	}
+}
+
+/*
+ErrorWrappedEvaluateContext is a wrapper for the cmd package to remove repetitive boilerplate code.
+It returns the evaluated context or a preformatted error.
+*/
+func ErrorWrappedEvaluateContext() (models.NestContext, error) {
+	context, err := internal.EvaluateContext()
+	if err != nil {
+		return models.NestContext{}, fmt.Errorf("internal context error: %w.\nPlease fix any configuration errors to proceed", err)
+	}
+
+	return context, nil
 }
