@@ -31,7 +31,7 @@ func TestRemoveSubmodule(t *testing.T) {
 
 		mockContext := models.NestContext{}
 
-		for _ = range tc.existingSubmoduleCount {
+		for range tc.existingSubmoduleCount {
 			mockContext.Config.Submodules = append(mockContext.Config.Submodules, models.Submodule{})
 		}
 
