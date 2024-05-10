@@ -64,7 +64,7 @@ func TestCloneGitRepository(t *testing.T) {
 
 }
 
-func TestChangeGitHead(t *testing.T) {
+func TestGitCheckout(t *testing.T) {
 	t.Parallel()
 
 	cases := []struct {
@@ -88,7 +88,7 @@ func TestChangeGitHead(t *testing.T) {
 	}
 
 	for index, tc := range cases {
-		t.Run(fmt.Sprintf("TestChangeGitHead-%d", index+1), func(t *testing.T) {
+		t.Run(fmt.Sprintf("TestGitCheckout-%d", index+1), func(t *testing.T) {
 			t.Parallel()
 			repoDir := tc.dir
 
@@ -104,12 +104,12 @@ func TestChangeGitHead(t *testing.T) {
 				repoDir = testEnv.Dir.SJoin("temp")
 			}
 
-			err := utils.ChangeGitHead(repoDir, tc.ref)
+			err := utils.GitCheckout(repoDir, tc.ref)
 			if tc.err && err == nil {
-				t.Errorf("CloneGitRepository() for case %d returned no error but expected one", index+1)
+				t.Errorf("GitCheckout() for case %d returned no error but expected one", index+1)
 			}
 			if !tc.err && err != nil {
-				t.Errorf("CloneGitRepository() for case %d returned error, but should've not -> %s", index+1, err)
+				t.Errorf("GitCheckout() for case %d returned error, but should've not -> %s", index+1, err)
 			}
 		})
 	}

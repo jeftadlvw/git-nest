@@ -3,13 +3,17 @@ package tests
 import (
 	"fmt"
 	"github.com/jeftadlvw/git-nest/actions"
+	"github.com/jeftadlvw/git-nest/interfaces"
 	"github.com/jeftadlvw/git-nest/internal"
+	"github.com/jeftadlvw/git-nest/migrations"
+	mcontext "github.com/jeftadlvw/git-nest/migrations/context"
+	"github.com/jeftadlvw/git-nest/migrations/fs"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/test_env"
 	test_env_models "github.com/jeftadlvw/git-nest/test_env/models"
 	"github.com/jeftadlvw/git-nest/utils"
-	"math"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -27,6 +31,9 @@ func TestRemoveSubmoduleFromContext(t *testing.T) {
 	testDirEmpty := "testdirinrepoempty"
 	testDirFull := "testdirinrepofull"
 
+	expectedMigrations := []interfaces.Migration{mcontext.RemoveSubmodule{}}
+	expectedMigrationsDeleteDir := []interfaces.Migration{fs.DeleteDirectory{}, mcontext.RemoveSubmodule{}}
+
 	cases := []struct {
 		path                   string
 		joinWithRoot           bool
@@ -36,25 +43,26 @@ func TestRemoveSubmoduleFromContext(t *testing.T) {
 		forceDelete            bool
 		addPathToSubmodules    bool
 		simulateNoGitInstalled bool
+		expectedMigrations     []interfaces.Migration
 		err                    bool
 	}{
 		// test path conditions
-		{"/invalid/root", false, false, false, false, false, false, false, true},
-		{"../invalid/dir", false, false, false, false, false, false, false, true},
-		{"", true, false, false, false, false, false, false, true},
-		{".", true, false, false, false, false, false, false, true},
+		{"/invalid/root", false, false, false, false, false, false, false, nil, true},
+		{"../invalid/dir", false, false, false, false, false, false, false, nil, true},
+		{"", true, false, false, false, false, false, false, nil, true},
+		{".", true, false, false, false, false, false, false, nil, true},
 
 		// find submodule
-		{"foo", true, false, false, false, false, false, false, true},
-		{"foo", true, false, false, false, false, true, false, false},
-		{repoDir, true, false, false, false, false, true, false, true},
-		{repoDir, true, true, false, false, false, true, false, false},
-		{repoDir, true, true, true, false, false, true, false, true},
-		{repoDir, true, true, true, false, true, true, false, false},
-		{repoDir, true, true, true, true, false, true, false, true},
-		{repoDir, true, true, true, true, true, true, false, false},
-		{repoDir, true, true, true, true, true, true, true, false},
-		{repoDir, true, true, false, false, false, true, true, false},
+		{"foo", true, false, false, false, false, false, false, nil, true},
+		{"foo", true, false, false, false, false, true, false, expectedMigrations, false},
+		{repoDir, true, false, false, false, false, true, false, nil, true},
+		{repoDir, true, true, false, false, false, true, false, expectedMigrationsDeleteDir, false},
+		{repoDir, true, true, true, false, false, true, false, nil, true},
+		{repoDir, true, true, true, false, true, true, false, expectedMigrationsDeleteDir, false},
+		{repoDir, true, true, true, true, false, true, false, nil, true},
+		{repoDir, true, true, true, true, true, true, false, expectedMigrationsDeleteDir, false},
+		{repoDir, true, true, true, true, true, true, true, expectedMigrationsDeleteDir, false},
+		{repoDir, true, true, false, false, false, true, true, expectedMigrationsDeleteDir, false},
 	}
 
 	for index, tc := range cases {
@@ -132,26 +140,33 @@ func TestRemoveSubmoduleFromContext(t *testing.T) {
 				p = context.ProjectRoot.SJoin(tc.path)
 			}
 
-			expectedSubmoduleCount := int(math.Max(float64(len(context.Config.Submodules)-1), 0))
-			dirExisted := p.IsDir()
-
 			// remove submodule
-			err = actions.RemoveSubmoduleFromContext(&context, p, tc.removeNonEmptyDir, tc.forceDelete)
+			migrationArr, err := actions.RemoveSubmoduleFromContext(&context, p, tc.removeNonEmptyDir, tc.forceDelete)
 
-			// check things
+			// check migration array
+			if !tc.err && len(tc.expectedMigrations) != len(migrationArr) {
+				t.Fatalf("AddSubmoduleInContext() for case %d returned unequal amounts of migrations: expected %d, got %d", index+1, len(tc.expectedMigrations), len(migrationArr))
+			}
+			if !tc.err {
+				for mindex, migration := range migrationArr {
+					if reflect.TypeOf(migration) != reflect.TypeOf(tc.expectedMigrations[mindex]) {
+						t.Fatalf("AddSubmoduleInContext() for case %d had unexpected migration at index %d: %s != %s", index+1, mindex, reflect.TypeOf(migration), reflect.TypeOf(tc.expectedMigrations[mindex]))
+					}
+				}
+			}
+
+			// run migrations if action function call did not return an error
+			if err == nil {
+				err = migrations.RunMigrations(migrationArr...)
+			}
+
+			// test for errors
 			if tc.err && err == nil {
 				t.Fatalf("RemoveSubmoduleFromContext-%d returned no error but expected one", index+1)
 			}
 			if !tc.err && err != nil {
 				t.Fatalf("RemoveSubmoduleFromContext-%d returned error, but should've not -> %s", index+1, err)
 			}
-			if !tc.err && len(context.Config.Submodules) != expectedSubmoduleCount {
-				t.Fatalf("RemoveSubmoduleFromContext-%d unequal expected submodule count. expected %d, got %d", index+1, expectedSubmoduleCount, len(context.Config.Submodules))
-			}
-			if !tc.err && dirExisted && p.IsDir() {
-				t.Fatalf("RemoveSubmoduleFromContext-%d previously existing directory %s was not deleted", index+1, p)
-			}
-
 		})
 	}
 }

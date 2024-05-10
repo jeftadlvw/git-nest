@@ -12,9 +12,15 @@ import (
 
 func CreateTestEnvironment(settings test_env_models.EnvSettings) (test_env_models.TestEnv, error) {
 
-	tempDir, err := utils.CreateTempDir()
-	if err != nil {
-		return test_env_models.TestEnv{}, fmt.Errorf("error creating temporary directory: %w", err)
+	var err error
+
+	tempDir := models.Path(strings.TrimSpace(settings.Path))
+
+	if tempDir == "" {
+		tempDir, err = utils.CreateTempDir()
+		if err != nil {
+			return test_env_models.TestEnv{}, fmt.Errorf("error creating temporary directory: %w", err)
+		}
 	}
 
 	if !settings.NoGit {
@@ -44,7 +50,7 @@ func CreateTestEnvironment(settings test_env_models.EnvSettings) (test_env_model
 			}
 
 			if settings.Ref != "" {
-				err = utils.ChangeGitHead(gitDir, settings.Ref)
+				err = utils.GitCheckout(gitDir, settings.Ref)
 				if err != nil {
 					return test_env_models.TestEnv{}, fmt.Errorf("error while changing ref: %s", err)
 				}

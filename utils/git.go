@@ -50,26 +50,34 @@ func CloneGitRepository(url string, p models.Path, cloneDirName string) error {
 }
 
 /*
-ChangeGitHead changes a local repository's HEAD.
+GitCheckout changes a local repository's HEAD.
 */
-func ChangeGitHead(repository models.Path, head string) error {
-	head = strings.TrimSpace(head)
-	if head == "" {
-		return fmt.Errorf("head is empty")
+func GitCheckout(repository models.Path, ref string) error {
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		return fmt.Errorf("ref cannot be blank")
+	}
+
+	if repository.Empty() {
+		return errors.New("path is empty")
 	}
 
 	if !repository.Exists() {
 		return fmt.Errorf("%s does not exist", repository)
 	}
 
-	output, err := RunCommandCombinedOutput(repository, "git", "checkout", head, "--progress")
+	if !repository.IsDir() {
+		return fmt.Errorf("%s is not a directory", repository)
+	}
+
+	output, err := RunCommandCombinedOutput(repository, "git", "checkout", ref, "--progress")
 
 	if strings.Contains(output, "fatal: not a git repository") {
 		return fmt.Errorf("%s is not a git repository", repository)
 	}
 
 	if strings.Contains(output, "error: pathspec") {
-		return fmt.Errorf("head '%s' does not exist", head)
+		return fmt.Errorf("ref '%s' does not exist", ref)
 	}
 
 	if err != nil {
