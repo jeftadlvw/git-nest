@@ -3,8 +3,9 @@ package cmd
 import (
 	"fmt"
 	"github.com/jeftadlvw/git-nest/actions"
-	cmdInternal "github.com/jeftadlvw/git-nest/cmd/internal"
-	"github.com/jeftadlvw/git-nest/internal"
+	"github.com/jeftadlvw/git-nest/cmd/internal"
+	"github.com/jeftadlvw/git-nest/migrations"
+	mcontext "github.com/jeftadlvw/git-nest/migrations/context"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/spf13/cobra"
 )
@@ -14,7 +15,7 @@ func createRemoveCommand() *cobra.Command {
 		Use:     "remove [path]",
 		Aliases: []string{"rm"},
 		Short:   "Remove a submodule from this project",
-		Run:     cmdInternal.RunWrapper(wrapRemoveSubmodule, cmdInternal.ArgExactN(1)),
+		Run:     internal.RunWrapper(wrapRemoveSubmodule, internal.ArgExactN(1)),
 	}
 
 	rmCmd.Flags().BoolP("delete", "d", false, "delete existing directory")
@@ -35,22 +36,20 @@ func wrapRemoveSubmodule(cmd *cobra.Command, args []string) {
 func removeSubmodule(p models.Path, deleteDirectory bool, forceDelete bool) error {
 
 	// read context
-	context, err := internal.EvaluateContext()
-	if err != nil {
-		return fmt.Errorf("internal context error: %w.\nPlease fix any configuration errors to proceed", err)
-	}
-
-	err = actions.RemoveSubmoduleFromContext(&context, p, deleteDirectory, forceDelete)
+	context, err := internal.ErrorWrappedEvaluateContext()
 	if err != nil {
 		return err
 	}
 
-	// write configuration files
-	_, _, err1, err2 := internal.WriteProjectConfigFiles(context)
-	if err1 != nil {
-		return fmt.Errorf("error writing configuration files: %w", err1)
-	} else if err2 != nil {
-		return fmt.Errorf("error writing configuration files: %w", err2)
+	actionMigrations, err := actions.RemoveSubmoduleFromContext(&context, p, deleteDirectory, forceDelete)
+	if err != nil {
+		return err
+	}
+
+	actionMigrations = append(actionMigrations, mcontext.WriteConfigFiles{Context: context})
+	err = migrations.RunMigrations(actionMigrations...)
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -3,8 +3,9 @@ package cmd
 import (
 	"fmt"
 	"github.com/jeftadlvw/git-nest/actions"
-	cmdInternal "github.com/jeftadlvw/git-nest/cmd/internal"
-	"github.com/jeftadlvw/git-nest/internal"
+	"github.com/jeftadlvw/git-nest/cmd/internal"
+	"github.com/jeftadlvw/git-nest/migrations"
+	mcontext "github.com/jeftadlvw/git-nest/migrations/context"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/models/urls"
 	"github.com/spf13/cobra"
@@ -15,7 +16,7 @@ func createAddCmd() *cobra.Command {
 	var addCmd = &cobra.Command{
 		Use:   "add url [ref] [location]",
 		Short: "Add and clone a remote submodule into this project",
-		Run:   cmdInternal.RunWrapper(wrapAddSubmodule, cmdInternal.ArgMinN(1), cmdInternal.ArgMaxN(3)),
+		Run:   internal.RunWrapper(wrapAddSubmodule, internal.ArgMinN(1), internal.ArgMaxN(3)),
 	}
 
 	return addCmd
@@ -63,22 +64,20 @@ func argsToParamsAddSubmodule(args []string) (urls.HttpUrl, string, models.Path,
 func addSubmodule(url urls.HttpUrl, ref string, cloneDir models.Path) error {
 
 	// read context
-	context, err := internal.EvaluateContext()
-	if err != nil {
-		return fmt.Errorf("internal context error: %w.\nPlease fix any configuration errors to proceed", err)
-	}
-
-	err = actions.AddSubmoduleInContext(&context, url, ref, cloneDir)
+	context, err := internal.ErrorWrappedEvaluateContext()
 	if err != nil {
 		return err
 	}
 
-	// write configuration files
-	_, _, err1, err2 := internal.WriteProjectConfigFiles(context)
-	if err1 != nil {
-		return fmt.Errorf("error writing configuration files: %w", err1)
-	} else if err2 != nil {
-		return fmt.Errorf("error writing configuration files: %w", err2)
+	actionMigrations, err := actions.AddSubmoduleInContext(&context, url, ref, cloneDir)
+	if err != nil {
+		return err
+	}
+
+	actionMigrations = append(actionMigrations, mcontext.WriteConfigFiles{Context: context})
+	err = migrations.RunMigrations(actionMigrations...)
+	if err != nil {
+		return err
 	}
 
 	return nil
