@@ -8,10 +8,11 @@ import (
 )
 
 type DeleteDirectory struct {
-	Path models.Path
+	Path   models.Path
+	DryRun bool
 }
 
-func (m *DeleteDirectory) Migrate() error {
+func (m DeleteDirectory) Migrate() error {
 	if m.Path.Empty() {
 		return errors.New("path is empty")
 	}
@@ -20,9 +21,11 @@ func (m *DeleteDirectory) Migrate() error {
 		return errors.New("cannot delete system root directory")
 	}
 
-	err := os.RemoveAll(m.Path.String())
-	if err != nil {
-		return fmt.Errorf("could not delete directory: %w", err)
+	if !m.DryRun {
+		err := os.RemoveAll(m.Path.String())
+		if err != nil {
+			return fmt.Errorf("could not delete directory: %w", err)
+		}
 	}
 
 	return nil
