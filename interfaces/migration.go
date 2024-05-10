@@ -1,10 +1,10 @@
 package interfaces
 
 /*
-ModuleMigration defines an interface for performing migration on
+Migration defines an interface for performing migration on
 nested modules.
 */
-type ModuleMigration interface {
+type Migration interface {
 
 	/*
 		Migrate migrates the module.
