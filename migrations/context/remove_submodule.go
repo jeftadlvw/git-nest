@@ -17,7 +17,7 @@ func (m RemoveSubmodule) Migrate() error {
 	}
 
 	if m.SubmoduleIndex < 0 || m.SubmoduleIndex >= len(m.Context.Config.Submodules) {
-		return fmt.Errorf("submodule index out of range (%d, but can be [0, %d])", m.SubmoduleIndex, len(m.Context.Config.Submodules)-1)
+		return fmt.Errorf("submodule index out of range (%d, but can be [0, %d])", m.SubmoduleIndex, max(len(m.Context.Config.Submodules)-1, 0))
 	}
 
 	// remove submodule from submodule slice
