@@ -19,13 +19,6 @@ import (
 
 func TestRemoveSubmoduleFromContext(t *testing.T) {
 
-	/*
-		testRepoUrl, err := urls.HttpUrlFromString(test_env.RepoUrl)
-		if err != nil {
-			t.Fatal(err)
-		}
-	*/
-
 	repoDir := "example-repository"
 	testFile := "testfileinrepo"
 	testDirEmpty := "testdirinrepoempty"
