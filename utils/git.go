@@ -129,6 +129,7 @@ func GetGitRemoteUrl(d models.Path) (string, error) {
 
 /*
 GetGitFetchHead retrieves the current HEAD of a local repository.
+Returns long commit hash, commit abbreviation and/or error.
 */
 func GetGitFetchHead(d models.Path) (string, string, error) {
 	if d.Empty() {
