@@ -23,7 +23,7 @@ func SynchronizeConfigAndModules(context *models.NestContext) ([]interfaces.Migr
 	}
 
 	for index := range len(context.Config.Submodules) {
-		migrationArr, serr := synchronizeSubmodule(&context.Config.Submodules[index], context)
+		migrationArr, serr := SynchronizeSubmodule(&context.Config.Submodules[index], context.ProjectRoot)
 
 		if serr != nil {
 			fmt.Printf("could not synchronize nested module at position %d: %s\n", index+1, serr)
@@ -38,13 +38,13 @@ func SynchronizeConfigAndModules(context *models.NestContext) ([]interfaces.Migr
 }
 
 /*
-synchronizeSubmodule is a high level wrapper to synchronize changes between one nested module
+SynchronizeSubmodule is a high level wrapper to synchronize changes between one nested module
 and an updated configuration.
 */
-func synchronizeSubmodule(s *models.Submodule, c *models.NestContext) ([]interfaces.Migration, error) {
+func SynchronizeSubmodule(s *models.Submodule, projectRoot models.Path) ([]interfaces.Migration, error) {
 	migrationChain := migrations.MigrationChain{}
 
-	absolutePath := c.ProjectRoot.Join(s.Path)
+	absolutePath := projectRoot.Join(s.Path)
 
 	// if s.Path is an already existing file, return error
 	if absolutePath.IsFile() {
