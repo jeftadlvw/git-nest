@@ -13,3 +13,7 @@ indent_size = 4                         # Set indent size to 4 spaces
 # golang and Makefile
 [{go.mod,go.sum,*.go,Makefile}]
 indent_style = tab
+
+# yml
+[{*yml,*yaml}]
+indent_size = 2

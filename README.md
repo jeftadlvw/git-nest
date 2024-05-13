@@ -63,7 +63,7 @@ As of current development, `go-1.22` is required to build the source code.
 ### Makefile targets
 - `build` (default): build the project
 - `git-test`: test git integration
-- `root-dir`: echo project root directory concatenated by make
+- `debug`: echo project root directory and other Makefile variables
 
 
 ## Contributing
