@@ -6,6 +6,7 @@ import (
 	"github.com/jeftadlvw/git-nest/interfaces"
 	"github.com/jeftadlvw/git-nest/migrations"
 	"github.com/jeftadlvw/git-nest/migrations/git"
+	"github.com/jeftadlvw/git-nest/migrations/submodules"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/models/urls"
 	"github.com/jeftadlvw/git-nest/utils"
@@ -42,19 +43,23 @@ SynchronizeSubmodule is a high level wrapper to synchronize changes between one 
 and an updated configuration.
 */
 func SynchronizeSubmodule(s *models.Submodule, projectRoot models.Path) ([]interfaces.Migration, error) {
-	migrationChain := migrations.MigrationChain{}
+	err := s.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("valdation error: %s", err)
+	}
 
+	migrationChain := migrations.MigrationChain{}
 	absolutePath := projectRoot.Join(s.Path)
 
-	// if s.Path is an already existing file, return error
+	// if s.PathS is an already existing file, return error
 	if absolutePath.IsFile() {
 		return nil, fmt.Errorf("%s is a file", s.Path)
 	}
 
-	// if s.Path does not exist, then clone
+	// if s.PathS does not exist, then clone
 	if !absolutePath.Exists() {
 		migrationChain.Add(git.Clone{
-			Url:          &s.Url,
+			Url:          s.Url,
 			Path:         absolutePath.Parent(),
 			CloneDirName: s.Path.Base(),
 		})
@@ -67,7 +72,7 @@ func SynchronizeSubmodule(s *models.Submodule, projectRoot models.Path) ([]inter
 			})
 		}
 	} else {
-		// if s.Path already exists check the repository's origin url
+		// if s.PathS already exists check the repository's origin url
 		repositoryRemoteUrlStr, err := utils.GetGitRemoteUrl(absolutePath)
 		if err != nil {
 			return nil, fmt.Errorf("could not get remote url: %w", err)
@@ -80,7 +85,10 @@ func SynchronizeSubmodule(s *models.Submodule, projectRoot models.Path) ([]inter
 
 		// if origin url's do not match, choose repository as truth
 		if repositoryRemoteUrl.String() != s.Url.String() {
-			s.Url = repositoryRemoteUrl
+			migrationChain.Add(submodules.UpdateUrl{
+				Submodule: s,
+				Url:       repositoryRemoteUrl,
+			})
 		}
 
 		// check the repository's head
@@ -96,7 +104,10 @@ func SynchronizeSubmodule(s *models.Submodule, projectRoot models.Path) ([]inter
 
 		// if the heads do not match, choose repository head as truth (== set submodule ref)
 		if repositoryHead != s.Ref {
-			s.Ref = repositoryHead
+			migrationChain.Add(submodules.UpdateRef{
+				Submodule: s,
+				Ref:       repositoryHead,
+			})
 		}
 	}
 
