@@ -45,7 +45,7 @@ func TestCloneGitRepository(t *testing.T) {
 			if tc.tempPath {
 				tempDir, err := utils.CreateTempDir()
 				if err != nil {
-					t.Fatalf("error creating temporary directory for case %d: %s", index+1, err)
+					t.Fatalf("error creating temporary directory: %s", err)
 					return
 				}
 				defer os.RemoveAll(clonePath.String())
@@ -54,10 +54,10 @@ func TestCloneGitRepository(t *testing.T) {
 
 			err := utils.CloneGitRepository(tc.url, clonePath, tc.cloneDirName)
 			if tc.err && err == nil {
-				t.Errorf("CloneGitRepository() for case %d returned no error but expected one", index+1)
+				t.Fatalf("no error, but expected one")
 			}
 			if !tc.err && err != nil {
-				t.Errorf("CloneGitRepository() for case %d returned error, but should've not -> %s", index+1, err)
+				t.Fatalf("unexpected error: %s", err)
 			}
 		})
 	}
@@ -96,7 +96,7 @@ func TestGitCheckout(t *testing.T) {
 
 				testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"})
 				if err != nil {
-					t.Fatalf("error creating test environment for case %d: %s", index+1, err)
+					t.Fatalf("error creating test environment: %s", err)
 					return
 				}
 				defer testEnv.Destroy()
@@ -106,10 +106,10 @@ func TestGitCheckout(t *testing.T) {
 
 			err := utils.GitCheckout(repoDir, tc.ref)
 			if tc.err && err == nil {
-				t.Errorf("GitCheckout() for case %d returned no error but expected one", index+1)
+				t.Fatalf("no error, but expected one")
 			}
 			if !tc.err && err != nil {
-				t.Errorf("GitCheckout() for case %d returned error, but should've not -> %s", index+1, err)
+				t.Fatalf("unexpected error: %s", err)
 			}
 		})
 	}
@@ -120,7 +120,7 @@ func TestGetGitRootDirectory(t *testing.T) {
 
 	testTempDir, err := utils.CreateTempDir()
 	if err != nil {
-		t.Fatalf("error creating temporary directory for %s", err)
+		t.Fatalf("error creating temporary directory: %s", err)
 		return
 	}
 	defer os.RemoveAll(testTempDir.String())
@@ -152,7 +152,7 @@ func TestGetGitRootDirectory(t *testing.T) {
 				var tempDir models.Path
 				testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: tc.cloneDir})
 				if err != nil {
-					t.Fatalf("error creating test environment for case %d: %s", index+1, err)
+					t.Fatalf("error creating test environment: %s", err)
 					return
 				}
 				defer testEnv.Destroy()
@@ -177,15 +177,15 @@ func TestGetGitRootDirectory(t *testing.T) {
 
 			rootDir, err := utils.GetGitRootDirectory(repoDir)
 			if tc.err && err == nil {
-				t.Errorf("GetGitRootDirectory() for case %d returned no error but expected one", index+1)
+				t.Fatalf("no error, but expected one")
 				return
 			}
 			if !tc.err && err != nil {
-				t.Errorf("GetGitRootDirectory() for case %d returned error, but should've not -> %s", index+1, err)
+				t.Fatalf("unexpected error: %s", err)
 				return
 			}
 			if rootDir != expectDir {
-				t.Errorf("GetGitRootDirectory() for case %d returned unexpected remote: >%s<, expected >%s<,", index+1, rootDir, expectDir)
+				t.Fatalf("unexpected remote: >%s<, expected >%s<,", rootDir, expectDir)
 			}
 		})
 	}
@@ -216,7 +216,7 @@ func TestGetGitRemoteUrl(t *testing.T) {
 			if tc.useTempDir {
 				testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{Origin: tc.cloneTempRepo, CloneDir: "temp"})
 				if err != nil {
-					t.Fatalf("error creating test environment for case %d: %s", index+1, err)
+					t.Fatalf("error creating test environment: %s", err)
 					return
 				}
 				defer testEnv.Destroy()
@@ -226,15 +226,15 @@ func TestGetGitRemoteUrl(t *testing.T) {
 
 			remoteUrl, err := utils.GetGitRemoteUrl(repoDir)
 			if tc.err && err == nil {
-				t.Errorf("GetGitRemoteUrl() for case %d returned no error but expected one", index+1)
+				t.Fatalf("no error, but expected one")
 				return
 			}
 			if !tc.err && err != nil {
-				t.Errorf("GetGitRemoteUrl() for case %d returned error, but should've not -> %s", index+1, err)
+				t.Fatalf("unexpected error: %s", err)
 				return
 			}
 			if remoteUrl != tc.expected {
-				t.Errorf("GetGitRemoteUrl() for case %d returned unexpected remote: >%s<, expected >%s<,", index+1, remoteUrl, tc.expected)
+				t.Fatalf("unexpected remote: >%s<, expected >%s<,", remoteUrl, tc.expected)
 			}
 		})
 	}
@@ -273,7 +273,7 @@ func TestGetGitFetchHead(t *testing.T) {
 
 				testEnv, err := test_env.CreateTestEnvironment(envSettings)
 				if err != nil {
-					t.Fatalf("error creating test environment for case %d: %s", index+1, err)
+					t.Fatalf("error creating test environment: %s", err)
 					return
 				}
 				defer testEnv.Destroy()
@@ -283,18 +283,18 @@ func TestGetGitFetchHead(t *testing.T) {
 
 			headRef, headRefAbbrev, err := utils.GetGitFetchHead(repoDir)
 			if tc.err && err == nil {
-				t.Errorf("GetGitFetchHead() for case %d returned no error but expected one", index+1)
+				t.Fatalf("no error, but expected one")
 				return
 			}
 			if !tc.err && err != nil {
-				t.Errorf("GetGitFetchHead() for case %d returned error, but should've not -> %s", index+1, err)
+				t.Fatalf("unexpected error: %s", err)
 				return
 			}
 			if headRef != tc.expectedRef {
-				t.Errorf("GetGitFetchHead() for case %d returned unexpected ref: >%s<, expected >%s<,", index+1, headRef, tc.expectedRef)
+				t.Fatalf("unexpected ref: >%s<, expected >%s<,", headRef, tc.expectedRef)
 			}
 			if headRefAbbrev != tc.expectedAbbrev {
-				t.Errorf("GetGitFetchHead() for case %d returned unexpected abbreviation: >%s<, expected >%s<,", index+1, headRefAbbrev, tc.expectedAbbrev)
+				t.Fatalf("unexpected abbreviation: >%s<, expected >%s<,", headRefAbbrev, tc.expectedAbbrev)
 			}
 		})
 	}
@@ -330,7 +330,7 @@ func TestGetGitHasUntrackedChanges(t *testing.T) {
 				envSettings := test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"}
 				testEnv, err := test_env.CreateTestEnvironment(envSettings)
 				if err != nil {
-					t.Fatalf("error creating test environment for case %d: %s", index+1, err)
+					t.Fatalf("error creating test environment: %s", err)
 					return
 				}
 				defer testEnv.Destroy()
@@ -339,20 +339,20 @@ func TestGetGitHasUntrackedChanges(t *testing.T) {
 				if tc.createFile {
 					err = utils.WriteStrToFile(repoDir.SJoin(testFileName), "")
 					if err != nil {
-						t.Fatalf("error writing test file for case %d: %s", index+1, err)
+						t.Fatalf("error writing test file: %s", err)
 						return
 					}
 
 					if tc.commitFile {
 						out, err := utils.RunCommandCombinedOutput(repoDir, "git", "add", testFileName)
 						if err != nil {
-							t.Fatalf("error git-adding test file for case %d: %s; %s", index+1, err, out)
+							t.Fatalf("error git-adding test file: %s; %s", err, out)
 							return
 						}
 
 						out, err = utils.RunCommandCombinedOutput(repoDir, "git", "commit", "-m", "\"added test.txt\"")
 						if err != nil {
-							t.Fatalf("error git-commiting test file for case %d: %s; %s", index+1, err, out)
+							t.Fatalf("error git-commiting test file: %s; %s", err, out)
 							return
 						}
 					}
@@ -361,15 +361,15 @@ func TestGetGitHasUntrackedChanges(t *testing.T) {
 
 			hasUntrackedChanges, err := utils.GetGitHasUntrackedChanges(repoDir)
 			if tc.err && err == nil {
-				t.Errorf("GetGitHasUntrackedChanges() for case %d returned no error but expected one", index+1)
+				t.Fatalf("no error, but expected one")
 				return
 			}
 			if !tc.err && err != nil {
-				t.Errorf("GetGitHasUntrackedChanges() for case %d returned error, but should've not -> %s", index+1, err)
+				t.Fatalf("unexpected error: %s", err)
 				return
 			}
 			if hasUntrackedChanges != tc.expected {
-				t.Errorf("GetGitHasUntrackedChanges() for case %d returned %t (should be %t)", index+1, hasUntrackedChanges, tc.expected)
+				t.Fatalf("GetGitHasUntrackedChanges() returned %t (should be %t)", hasUntrackedChanges, tc.expected)
 			}
 		})
 	}
@@ -405,7 +405,7 @@ func TestGetGitHasUnpublishedChanges(t *testing.T) {
 				envSettings := test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"}
 				testEnv, err := test_env.CreateTestEnvironment(envSettings)
 				if err != nil {
-					t.Fatalf("error creating test environment for case %d: %s", index+1, err)
+					t.Fatalf("error creating test environment: %s", err)
 					return
 				}
 				defer testEnv.Destroy()
@@ -414,20 +414,20 @@ func TestGetGitHasUnpublishedChanges(t *testing.T) {
 				if tc.createFile {
 					err = utils.WriteStrToFile(repoDir.SJoin(testFileName), "")
 					if err != nil {
-						t.Fatalf("error writing test file for case %d: %s", index+1, err)
+						t.Fatalf("error writing test file: %s", err)
 						return
 					}
 
 					if tc.commitFile {
 						out, err := utils.RunCommandCombinedOutput(repoDir, "git", "add", testFileName)
 						if err != nil {
-							t.Fatalf("error git-adding test file for case %d: %s; %s", index+1, err, out)
+							t.Fatalf("error git-adding test file: %s; %s", err, out)
 							return
 						}
 
 						out, err = utils.RunCommandCombinedOutput(repoDir, "git", "commit", "-m", "\"added test.txt\"")
 						if err != nil {
-							t.Fatalf("error git-commiting test file for case %d: %s; %s", index+1, err, out)
+							t.Fatalf("error git-commiting test file: %s; %s", err, out)
 							return
 						}
 					}
@@ -436,15 +436,15 @@ func TestGetGitHasUnpublishedChanges(t *testing.T) {
 
 			hasUnpublishedChanges, err := utils.GetGitHasUnpublishedChanges(repoDir)
 			if tc.err && err == nil {
-				t.Errorf("GetGitHasUnpublishedChanges() for case %d returned no error but expected one", index+1)
+				t.Fatalf("no error, but expected one")
 				return
 			}
 			if !tc.err && err != nil {
-				t.Errorf("GetGitHasUnpublishedChanges() for case %d returned error, but should've not -> %s", index+1, err)
+				t.Fatalf("unexpected error: %s", err)
 				return
 			}
 			if hasUnpublishedChanges != tc.expected {
-				t.Errorf("GetGitHasUnpublishedChanges() for case %d returned %t (should be %t)", index+1, hasUnpublishedChanges, tc.expected)
+				t.Fatalf("returned %t, but should be %t", hasUnpublishedChanges, tc.expected)
 			}
 		})
 	}

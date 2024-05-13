@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/jeftadlvw/git-nest/internal"
 	"github.com/jeftadlvw/git-nest/models"
 	"testing"
@@ -21,10 +22,12 @@ func TestPathContainsUp(t *testing.T) {
 	}
 
 	for index, test := range tests {
-		result := internal.PathContainsUp(test.path)
-		if result != test.expected {
-			t.Errorf("PathContainsUp-%d for (%s) returned %v, expected %v", index+1, test.path, result, test.expected)
-		}
+		t.Run(fmt.Sprintf("TestPathContainsUp-%d", index+1), func(t *testing.T) {
+			result := internal.PathContainsUp(test.path)
+			if result != test.expected {
+				t.Errorf("returned %v, expected %v", result, test.expected)
+			}
+		})
 	}
 }
 
@@ -42,10 +45,12 @@ func TestPathOutsideRoot(t *testing.T) {
 	}
 
 	for index, test := range tests {
-		result := internal.PathOutsideRoot(root, test.path)
-		if result != test.expected {
-			t.Errorf("PathOutsideRoot-%d for (%s, %s) returned %v, expected %v", index+1, root, test.path, result, test.expected)
-		}
+		t.Run(fmt.Sprintf("TestPathOutsideRoot-%d", index+1), func(t *testing.T) {
+			result := internal.PathOutsideRoot(root, test.path)
+			if result != test.expected {
+				t.Errorf("returned %v, expected %v", result, test.expected)
+			}
+		})
 	}
 }
 
@@ -92,20 +97,17 @@ func TestPathRelativeToRootWithJoinedOriginIfNotAbs(t *testing.T) {
 	}
 
 	for index, tc := range tests {
-		result, err := internal.PathRelativeToRootWithJoinedOriginIfNotAbs(tc.root, tc.origin, tc.path)
-		if tc.err && err == nil {
-			t.Errorf("PathRelativeToRootWithJoinedOriginIfNotAbs-%d returned no error but expected one", index+1)
-			continue
-		}
-		if !tc.err && err != nil {
-			t.Errorf("PathRelativeToRootWithJoinedOriginIfNotAbs-%d returned error, but should've not -> %s", index+1, err)
-			continue
-		}
-		if tc.err && err != nil {
-			continue
-		}
-		if result != tc.expected {
-			t.Errorf("PathRelativeToRootWithJoinedOriginIfNotAbs-%d for (%s, %s, %s) returned %s, expected %s", index+1, tc.root, tc.origin, tc.path, result, tc.expected)
-		}
+		t.Run(fmt.Sprintf("TestPathRelativeToRootWithJoinedOriginIfNotAbs-%d", index+1), func(t *testing.T) {
+			result, err := internal.PathRelativeToRootWithJoinedOriginIfNotAbs(tc.root, tc.origin, tc.path)
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if !tc.err && result != tc.expected {
+				t.Errorf("returned %s, expected %s", result, tc.expected)
+			}
+		})
 	}
 }

@@ -76,7 +76,7 @@ func TestAddSubmoduleInContext(t *testing.T) {
 
 			testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{EmptyGit: true})
 			if err != nil {
-				t.Fatalf("error creating test environment for case %d: %s", index+1, err)
+				t.Fatalf("error creating test environment: %s", err)
 				return
 			}
 			defer testEnv.Destroy()
@@ -100,7 +100,7 @@ func TestAddSubmoduleInContext(t *testing.T) {
 			// create context
 			context, err := internal.CreateContext(testEnv.Dir)
 			if err != nil {
-				t.Fatalf("error creating context for case %d: %s", index+1, err)
+				t.Fatalf("error creating context: %s", err)
 			}
 
 			context.Config.Submodules = tc.submodules
@@ -116,7 +116,7 @@ func TestAddSubmoduleInContext(t *testing.T) {
 			// add submodule
 			url, err := urls.HttpUrlFromString(tc.url)
 			if err != nil {
-				t.Errorf("unable to convert url for case %d: %s", index+1, err)
+				t.Fatalf("unable to convert url: %s", err)
 			}
 
 			cloneDir := tc.cloneDir
@@ -124,12 +124,12 @@ func TestAddSubmoduleInContext(t *testing.T) {
 
 			// check migration array
 			if !tc.err && len(tc.expectedMigrations) != len(migrationArr) {
-				t.Fatalf("AddSubmoduleInContext() for case %d returned unequal amounts of migrations: expected %d, got %d", index+1, len(tc.expectedMigrations), len(migrationArr))
+				t.Fatalf("got unequal amounts of migrations: expected %d, got %d", len(tc.expectedMigrations), len(migrationArr))
 			}
 			if !tc.err {
 				for mindex, migration := range migrationArr {
 					if reflect.TypeOf(migration) != reflect.TypeOf(tc.expectedMigrations[mindex]) {
-						t.Fatalf("AddSubmoduleInContext() for case %d had unexpected migration at index %d: %T != %T", index+1, mindex, migration, tc.expectedMigrations[mindex])
+						t.Fatalf("unexpected migration at index %d: %T != %T", mindex, migration, tc.expectedMigrations[mindex])
 					}
 				}
 			}
@@ -141,10 +141,10 @@ func TestAddSubmoduleInContext(t *testing.T) {
 
 			// test for errors
 			if tc.err && err == nil {
-				t.Fatalf("AddSubmoduleInContext() for case %d returned no error but expected one", index+1)
+				t.Fatalf("no error, but expected one")
 			}
 			if !tc.err && err != nil {
-				t.Fatalf("AddSubmoduleInContext() for case %d returned error, but should've not -> %s", index+1, err)
+				t.Fatalf("unexpected error: %s", err)
 			}
 
 		})

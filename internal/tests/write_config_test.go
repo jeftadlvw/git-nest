@@ -28,18 +28,20 @@ func TestFmtSubmodulesGitExclude(t *testing.T) {
 		{submodules: []models.Submodule{{Path: "submodule1"}, {Path: "submodule2"}, {Path: "submodule3"}}, expected: "submodule1\nsubmodule2\nsubmodule3"},
 	}
 
-	for _, tc := range cases {
-		output := internal.FmtSubmodulesGitIgnore(tc.submodules)
-		if output != tc.expected {
-			t.Errorf("FmtSubmodulesGitIgnore() for %v\nExpected:\n>%s<\n\nActual:\n>%s<", tc, tc.expected, output)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestFmtSubmodulesGitExclude-%d", index+1), func(t *testing.T) {
+			output := internal.FmtSubmodulesGitIgnore(tc.submodules)
+			if output != tc.expected {
+				t.Fatalf("Expected:\n>%s<\n\nActual:\n>%s<", tc.expected, output)
+			}
+		})
 	}
 }
 
 func TestWriteSubmodulePathIgnoreConfig(t *testing.T) {
 	tempFile, err := utils.CreateTempFile("")
 	if err != nil {
-		t.Errorf("failed to create temp file")
+		t.Fatalf("failed to create temp file")
 		return
 	}
 	defer os.Remove(tempFile.String())
@@ -58,47 +60,45 @@ func TestWriteSubmodulePathIgnoreConfig(t *testing.T) {
 		{[]models.Submodule{}, "", false},
 	}
 
-	for _, tc := range cases {
-		expectedContains := gitExcludeInfo
-		if tc.expected != "" {
-			expectedContains = expectedContains + "\n" + tc.expected
-		}
-		expectedContains = gitExcludePrefix + "\n" + expectedContains + "\n" + gitExcludeSuffix
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestWriteSubmodulePathIgnoreConfig-%d", index+1), func(t *testing.T) {
+			expectedContains := gitExcludeInfo
+			if tc.expected != "" {
+				expectedContains = expectedContains + "\n" + tc.expected
+			}
+			expectedContains = gitExcludePrefix + "\n" + expectedContains + "\n" + gitExcludeSuffix
 
-		err = internal.WriteSubmoduleIgnoreConfig(tempFile, tc.submodules)
-		if tc.error && err == nil {
-			t.Errorf("WriteSubmoduleIgnoreConfig() for %v returned no error but expected one", tc)
-			continue
-		}
-		if !tc.error && err != nil {
-			t.Errorf("WriteSubmoduleIgnoreConfig() for %v returned error, but should've not -> %s", tc, err)
-			continue
-		}
+			err = internal.WriteSubmoduleIgnoreConfig(tempFile, tc.submodules)
+			if tc.error && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.error && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
 
-		fileContents, err := utils.ReadFileToStr(tempFile)
-		if err != nil {
-			t.Errorf("WriteSubmoduleIgnoreConfig() failed to read temp file")
-			continue
-		}
+			fileContents, err := utils.ReadFileToStr(tempFile)
+			if err != nil {
+				t.Fatalf("failed to read temp file")
+			}
 
-		if !strings.Contains(fileContents, expectedContains) {
-			t.Errorf("WriteSubmoduleIgnoreConfig() for %v expected string in file\nExpected:\n>%s<\n\nFile:\n>%s<", tc, expectedContains, fileContents)
-			continue
-		}
+			if !strings.Contains(fileContents, expectedContains) {
+				t.Fatalf("Wexpected string in file\nExpected:\n>%s<\n\nFile:\n>%s<", expectedContains, fileContents)
+			}
+		})
 	}
 }
 
 func TestWriteNestConfig(t *testing.T) {
 	tempFile, err := utils.CreateTempFile("")
 	if err != nil {
-		t.Errorf("failed to create temp file")
+		t.Fatalf("failed to create temp file")
 		return
 	}
 	defer os.Remove(tempFile.String())
 
 	tempDir, err := utils.CreateTempDir()
 	if err != nil {
-		t.Errorf("failed to create temp dir: %s", err)
+		t.Fatalf("failed to create temp dir: %s", err)
 		return
 	}
 	defer os.RemoveAll(tempDir.String())
@@ -118,29 +118,28 @@ func TestWriteNestConfig(t *testing.T) {
 	}
 
 	// test without config header in file
-	for _, tc := range cases {
-		expectedContains := internal.SubmodulesToTomlConfig("  ", tc.submodules...)
+	for index, tc := range cases {
 
-		err = internal.WriteNestConfig(tc.path, tc.submodules)
-		if tc.error && err == nil {
-			t.Errorf("WriteNestConfig() for %v returned no error but expected one", tc)
-			continue
-		}
-		if !tc.error && err != nil {
-			t.Errorf("WriteNestConfig() for %v returned error, but should've not -> %s", tc, err)
-			continue
-		}
+		t.Run(fmt.Sprintf("TestWriteNestConfig-%d", index+1), func(t *testing.T) {
+			expectedContains := internal.SubmodulesToTomlConfig("  ", tc.submodules...)
 
-		fileContents, err := utils.ReadFileToStr(tempFile)
-		if err != nil {
-			t.Errorf("WriteNestConfig() failed to read temp file")
-			continue
-		}
+			err = internal.WriteNestConfig(tc.path, tc.submodules)
+			if tc.error && err == nil {
+				t.Fatalf("WriteNestConfig() for %v returned no error but expected one", tc)
+			}
+			if !tc.error && err != nil {
+				t.Fatalf("WriteNestConfig() for %v returned error, but should've not -> %s", tc, err)
+			}
 
-		if !strings.Contains(fileContents, expectedContains) {
-			t.Errorf("WriteNestConfig() for %v expected string in file\nExpected:\n>%s<\n\nFile:\n>%s<", tc, expectedContains, fileContents)
-			continue
-		}
+			fileContents, err := utils.ReadFileToStr(tempFile)
+			if err != nil {
+				t.Fatalf("WriteNestConfig() failed to read temp file")
+			}
+
+			if !strings.Contains(fileContents, expectedContains) {
+				t.Fatalf("WriteNestConfig() for %v expected string in file\nExpected:\n>%s<\n\nFile:\n>%s<", tc, expectedContains, fileContents)
+			}
+		})
 	}
 
 	// add config header and test for it's existence
@@ -148,37 +147,34 @@ func TestWriteNestConfig(t *testing.T) {
 	const mockConfigInFile = "[config]\n   foo = \"foo\"\n   bar = \"bar\"\n"
 	err = utils.WriteStrToFile(tempFile, mockConfig)
 	if err != nil {
-		t.Errorf("failed to write test config section: %s", err)
+		t.Fatalf("failed to write test config section: %s", err)
 		return
 	}
-	for _, tc := range cases {
-		expectedContains := internal.SubmodulesToTomlConfig("  ", tc.submodules...)
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestWriteNestConfig-%d", index+1), func(t *testing.T) {
+			expectedContains := internal.SubmodulesToTomlConfig("  ", tc.submodules...)
 
-		err = internal.WriteNestConfig(tc.path, tc.submodules)
-		if tc.error && err == nil {
-			t.Errorf("WriteNestConfig() for %v returned no error but expected one", tc)
-			continue
-		}
-		if !tc.error && err != nil {
-			t.Errorf("WriteNestConfig() for %v returned error, but should've not -> %s", tc, err)
-			continue
-		}
+			err = internal.WriteNestConfig(tc.path, tc.submodules)
+			if tc.error && err == nil {
+				t.Fatalf("WriteNestConfig() for %v returned no error but expected one", tc)
+			}
+			if !tc.error && err != nil {
+				t.Fatalf("WriteNestConfig() for %v returned error, but should've not -> %s", tc, err)
+			}
 
-		fileContents, err := utils.ReadFileToStr(tempFile)
-		if err != nil {
-			t.Errorf("WriteNestConfig() failed to read temp file")
-			continue
-		}
+			fileContents, err := utils.ReadFileToStr(tempFile)
+			if err != nil {
+				t.Fatalf("WriteNestConfig() failed to read temp file")
+			}
 
-		if !strings.Contains(fileContents, expectedContains) {
-			t.Errorf("WriteNestConfig() for %v expected string in file\nExpected:\n>%s<\n\nFile:\n>%s<", tc, expectedContains, fileContents)
-			continue
-		}
+			if !strings.Contains(fileContents, expectedContains) {
+				t.Fatalf("WriteNestConfig() for %v expected string in file\nExpected:\n>%s<\n\nFile:\n>%s<", tc, expectedContains, fileContents)
+			}
 
-		if !strings.Contains(fileContents, mockConfigInFile) {
-			t.Errorf("WriteNestConfig() for %v removed config section from config file: %s", tc, fileContents)
-			continue
-		}
+			if !strings.Contains(fileContents, mockConfigInFile) {
+				t.Fatalf("WriteNestConfig() for %v removed config section from config file: %s", tc, fileContents)
+			}
+		})
 	}
 }
 
@@ -204,7 +200,7 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 
 		tempDir, err := prepareGitRepository()
 		if err != nil {
-			t.Errorf("failed to prepare git repository: %s", err)
+			t.Fatalf("failed to prepare git repository: %s", err)
 			return
 		}
 		defer os.RemoveAll(tempDir.String())
@@ -227,38 +223,38 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 		gitExcludeWritten, configWritten, gitExcludeWriteErr, configWriteErr := internal.WriteProjectConfigFiles(context)
 
 		if gitExcludeWriteErr != nil {
-			t.Errorf("Writing to git exclude failed: %s", gitExcludeWriteErr)
+			t.Fatalf("writing to git exclude failed: %s", gitExcludeWriteErr)
 		}
 
 		if configWriteErr != nil {
-			t.Errorf("Writing to config file failed: %s", configWriteErr)
+			t.Fatalf("writing to config file failed: %s", configWriteErr)
 		}
 
 		if !gitExcludeWritten {
-			t.Errorf("WriteProjectConfigFiles() should've written to git exclude")
+			t.Fatalf("should've written to git exclude")
 		}
 
 		if !configWritten {
-			t.Errorf("WriteProjectConfigFiles() should've written to configuration file")
+			t.Fatalf("should've written to configuration file")
 		}
 
 		configContents, err := utils.ReadFileToStr(configFile)
 		if err != nil {
-			t.Errorf("error reading configuration file: %s", err)
+			t.Fatalf("error reading configuration file: %s", err)
 		}
 
 		gitExcludeContents, err := utils.ReadFileToStr(absGitExcludeFile)
 		if err != nil {
-			t.Errorf("error reading git exclude file: %s", err)
+			t.Fatalf("error reading git exclude file: %s", err)
 		}
 
 		if modulesExist {
 			if !strings.Contains(configContents, internal.SubmodulesToTomlConfig("  ", context.Config.Submodules...)) {
-				t.Errorf("configuration file does not contain submodules")
+				t.Fatalf("configuration file does not contain submodules")
 			}
 
 			if !strings.Contains(gitExcludeContents, internal.FmtSubmodulesGitIgnore(context.Config.Submodules)) {
-				t.Errorf("git exclude file does not contain submodules")
+				t.Fatalf("git exclude file does not contain submodules")
 			}
 		}
 	})
@@ -269,7 +265,7 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 
 		tempDir, err := prepareGitRepository()
 		if err != nil {
-			t.Errorf("failed to prepare git repository: %s", err)
+			t.Fatalf("failed to prepare git repository: %s", err)
 			return
 		}
 		defer os.RemoveAll(tempDir.String())
@@ -292,40 +288,39 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 		gitExcludeWritten, configWritten, gitExcludeWriteErr, configWriteErr := internal.WriteProjectConfigFiles(context)
 
 		if gitExcludeWriteErr != nil {
-			t.Errorf("Writing to git exclude failed, and should've never happened: %s", gitExcludeWriteErr)
+			t.Fatalf("writing to git exclude failed, and should've never happened: %s", gitExcludeWriteErr)
 		}
 
 		if configWriteErr != nil {
-			t.Errorf("Writing to config file failed: %s", configWriteErr)
+			t.Fatalf("writing to config file failed: %s", configWriteErr)
 		}
 
 		if gitExcludeWritten {
-			t.Errorf("WriteProjectConfigFiles() should not have written to git exclude")
+			t.Fatalf("should not have written to git exclude")
 		}
 
 		if !configWritten {
-			t.Errorf("WriteProjectConfigFiles() should've written to configuration file")
+			t.Fatalf("should've written to configuration file")
 		}
 
 		configContents, err := utils.ReadFileToStr(configFile)
 		if err != nil {
-			t.Errorf("error reading configuration file: %s", err)
+			t.Fatalf("error reading configuration file: %s", err)
 		}
 
 		gitExcludeContents, err := utils.ReadFileToStr(absGitExcludeFile)
 		if err != nil {
-			t.Errorf("error reading git exclude file: %s", err)
+			t.Fatalf("error reading git exclude file: %s", err)
 		}
 
 		if modulesExist {
 			if !strings.Contains(configContents, internal.SubmodulesToTomlConfig("  ", context.Config.Submodules...)) {
-				t.Errorf("configuration file does not contain submodules")
+				t.Fatalf("configuration file does not contain submodules")
 			}
 
 			if strings.Contains(gitExcludeContents, internal.FmtSubmodulesGitIgnore(context.Config.Submodules)) {
-				t.Errorf("git exclude file does contains submodules")
+				t.Fatalf("git exclude file does contains submodules")
 			}
 		}
 	})
-
 }

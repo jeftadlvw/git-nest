@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/jeftadlvw/git-nest/utils"
 	"testing"
 )
@@ -25,10 +26,11 @@ func TestFmtTree(t *testing.T) {
 	}
 
 	for index, tc := range cases {
-		output := utils.FmtTree(tc.config, tc.tree...)
-		if output != tc.expected {
-			t.Errorf("FmtTree() for case %d returned unexpected results:\nExpected:\n>%s<\n\nGot:\n>%s<", index+1, tc.expected, output)
-		}
+		t.Run(fmt.Sprintf("TestFmtTree-%d", index+1), func(t *testing.T) {
+			output := utils.FmtTree(tc.config, tc.tree...)
+			if output != tc.expected {
+				t.Fatalf("unexpected results:\nExpected:\n>%s<\n\nGot:\n>%s<", tc.expected, output)
+			}
+		})
 	}
-
 }

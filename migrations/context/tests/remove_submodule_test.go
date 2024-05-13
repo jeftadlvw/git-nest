@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/jeftadlvw/git-nest/interfaces"
 	"github.com/jeftadlvw/git-nest/migrations/context"
 	"github.com/jeftadlvw/git-nest/models"
@@ -28,26 +29,27 @@ func TestRemoveSubmodule(t *testing.T) {
 	}
 
 	for index, tc := range tests {
+		t.Run(fmt.Sprintf("TestRemoveSubmodule-%d", index+1), func(t *testing.T) {
+			mockContext := models.NestContext{}
 
-		mockContext := models.NestContext{}
+			for range tc.existingSubmoduleCount {
+				mockContext.Config.Submodules = append(mockContext.Config.Submodules, models.Submodule{})
+			}
 
-		for range tc.existingSubmoduleCount {
-			mockContext.Config.Submodules = append(mockContext.Config.Submodules, models.Submodule{})
-		}
+			err := context.RemoveSubmodule{
+				Context:        &mockContext,
+				SubmoduleIndex: tc.submoduleIndex,
+			}.Migrate()
 
-		err := context.RemoveSubmodule{
-			Context:        &mockContext,
-			SubmoduleIndex: tc.submoduleIndex,
-		}.Migrate()
-
-		if tc.err && err == nil {
-			t.Fatalf("TestRemoveSubmodule-%d expected error", index+1)
-		}
-		if !tc.err && err != nil {
-			t.Fatalf("TestRemoveSubmodule-%d unexpected error: %s", index+1, err)
-		}
-		if !tc.err && len(mockContext.Config.Submodules) != tc.existingSubmoduleCount-1 {
-			t.Fatalf("TestRemoveSubmodule-%d: submodule was not removed", index+1)
-		}
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if !tc.err && len(mockContext.Config.Submodules) != tc.existingSubmoduleCount-1 {
+				t.Fatalf("submodule was not removed")
+			}
+		})
 	}
 }

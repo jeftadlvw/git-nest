@@ -1,6 +1,8 @@
 package tests
 
 import (
+	"errors"
+	"fmt"
 	"github.com/jeftadlvw/git-nest/models"
 	"testing"
 )
@@ -13,9 +15,11 @@ func TestConfigValidate(t *testing.T) {
 		{models.Config{true, true}, nil},
 		{models.Config{false, false}, nil},
 	}
-	for _, tc := range tests {
-		if got := tc.config.Validate(); got != tc.expectedError {
-			t.Errorf("Config.Validate() returned invalid error %v, wanted %v", got, tc.expectedError)
-		}
+	for index, tc := range tests {
+		t.Run(fmt.Sprintf("TestConfigValidate-%d", index+1), func(t *testing.T) {
+			if got := tc.config.Validate(); !errors.Is(got, tc.expectedError) {
+				t.Fatalf("invalid error %v, expected %v", got, tc.expectedError)
+			}
+		})
 	}
 }

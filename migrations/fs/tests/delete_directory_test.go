@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/jeftadlvw/git-nest/interfaces"
 	"github.com/jeftadlvw/git-nest/migrations/fs"
 	"github.com/jeftadlvw/git-nest/models"
@@ -24,16 +25,18 @@ func TestDeleteDirectory(t *testing.T) {
 	}
 
 	for index, tc := range tests {
-		err := fs.DeleteDirectory{
-			Path:   models.Path(tc.path),
-			DryRun: true,
-		}.Migrate()
+		t.Run(fmt.Sprintf("TestDeleteDirectory-%d", index+1), func(t *testing.T) {
+			err := fs.DeleteDirectory{
+				Path:   models.Path(tc.path),
+				DryRun: true,
+			}.Migrate()
 
-		if tc.err && err == nil {
-			t.Fatalf("TestAppendSubmodule-%d expected error", index+1)
-		}
-		if !tc.err && err != nil {
-			t.Fatalf("TestAppendSubmodule-%d unexpected error: %s", index+1, err)
-		}
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+		})
 	}
 }

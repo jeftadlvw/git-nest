@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/jeftadlvw/git-nest/interfaces"
 	"github.com/jeftadlvw/git-nest/migrations/submodules"
 	"github.com/jeftadlvw/git-nest/models"
@@ -29,19 +30,22 @@ func TestUpdateUrl(t *testing.T) {
 	}
 
 	for index, tc := range tests {
-		err := submodules.UpdateUrl{
-			Submodule: tc.submodule,
-			Url:       tc.url,
-		}.Migrate()
+		t.Run(fmt.Sprintf("TestUpdateUrl-%d", index+1), func(t *testing.T) {
+			t.Parallel()
+			err := submodules.UpdateUrl{
+				Submodule: tc.submodule,
+				Url:       tc.url,
+			}.Migrate()
 
-		if tc.err && err == nil {
-			t.Fatalf("TestAppendSubmodule-%d expected error", index+1)
-		}
-		if !tc.err && err != nil {
-			t.Fatalf("TestAppendSubmodule-%d unexpected error: %s", index+1, err)
-		}
-		if !tc.err && tc.submodule.Url.String() != exampleUrl.String() {
-			t.Fatalf("TestAppendSubmodule-%d: context did not apply url", index+1)
-		}
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if !tc.err && tc.submodule.Url.String() != exampleUrl.String() {
+				t.Fatalf("context did not apply url")
+			}
+		})
 	}
 }

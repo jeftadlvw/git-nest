@@ -10,12 +10,12 @@ func TestStringInsert(t *testing.T) {
 	// empty start and end deliminator
 	_, err := utils.StringInsert("", "", "", "")
 	if err == nil {
-		t.Errorf("StringInsert() with empty start should return error, but did not")
+		t.Fatalf("StringInsert() with empty start should return error, but did not")
 	}
 
 	_, err = utils.StringInsert("", "", "foo", "")
 	if err == nil {
-		t.Errorf("StringInsert() with empty end should return error, but did not")
+		t.Fatalf("StringInsert() with empty end should return error, but did not")
 	}
 
 	const startDelimiter = "@@start"
@@ -48,32 +48,32 @@ Lorem ipsum dolor sit amet
 	// non-existing start and end deliminator
 	_, err = utils.StringInsert(originalString, "", "##start", endDelimiter)
 	if err == nil {
-		t.Errorf("StringInsert() with non-existings start should return error, but did not")
+		t.Fatalf("StringInsert() with non-existings start should return error, but did not")
 	}
 
 	_, err = utils.StringInsert(originalString, "", startDelimiter, "###end")
 	if err == nil {
-		t.Errorf("StringInsert() with non-existings end should return error, but did not")
+		t.Fatalf("StringInsert() with non-existings end should return error, but did not")
 	}
 
 	// start and end deliminator that occur often
 	_, err = utils.StringInsert(originalString, "", "@start", endDelimiter)
 	if err == nil {
-		t.Errorf("StringInsert() with recurring start should return error, but did not")
+		t.Fatalf("StringInsert() with recurring start should return error, but did not")
 	}
 
 	_, err = utils.StringInsert(originalString, "", startDelimiter, "@start")
 	if err == nil {
-		t.Errorf("StringInsert() with recurring end should return error, but did not")
+		t.Fatalf("StringInsert() with recurring end should return error, but did not")
 	}
 
 	output, err := utils.StringInsert(originalString, insertString, startDelimiter, endDelimiter)
 	if err != nil {
-		t.Errorf("StringInsert() should not return error, but did: %s", err)
+		t.Fatalf("StringInsert() should not return error, but did: %s", err)
 	}
 
 	if output != targetString {
-		t.Errorf("StringInsert() returned unexpected results:\nExpected:\n>%s<\n\nGot:\n>%s<", targetString, output)
+		t.Fatalf("StringInsert() returned unexpected results:\nExpected:\n>%s<\n\nGot:\n>%s<", targetString, output)
 	}
 }
 
@@ -82,12 +82,12 @@ func TestStringInsertAtFirst(t *testing.T) {
 	// empty start and end deliminator
 	_, err := utils.StringInsertAtFirst("", "", "", "")
 	if err == nil {
-		t.Errorf("StringInsert() with empty start should return error, but did not")
+		t.Fatalf("StringInsert() with empty start should return error, but did not")
 	}
 
 	_, err = utils.StringInsertAtFirst("", "", "foo", "")
 	if err == nil {
-		t.Errorf("StringInsert() with empty end should return error, but did not")
+		t.Fatalf("StringInsert() with empty end should return error, but did not")
 	}
 
 	const startDelimiter = "@@start"
@@ -127,21 +127,21 @@ Lorem ipsum dolor sit amet
 	// non-existing start and end deliminator
 	_, err = utils.StringInsertAtFirst(originalString, "", "##start", endDelimiter)
 	if err == nil {
-		t.Errorf("StringInsert() with non-existings start should return error, but did not")
+		t.Fatalf("StringInsert() with non-existings start should return error, but did not")
 	}
 
 	_, err = utils.StringInsertAtFirst(originalString, "", startDelimiter, "###end")
 	if err == nil {
-		t.Errorf("StringInsert() with non-existings end should return error, but did not")
+		t.Fatalf("StringInsert() with non-existings end should return error, but did not")
 	}
 
 	// start and end deliminator that occur often
 	output, err := utils.StringInsertAtFirst(originalString, insertString, startDelimiter, endDelimiter)
 	if err != nil {
-		t.Errorf("StringInsert() should not return error, but did: %s", err)
+		t.Fatalf("unexpected error: %s", err)
 	}
 
 	if output != targetString {
-		t.Errorf("StringInsert() returned unexpected results:\nExpected:\n>%s<\n\nGot:\n>%s<", targetString, output)
+		t.Fatalf("unexpected results:\nExpected:\n>%s<\n\nGot:\n>%s<", targetString, output)
 	}
 }

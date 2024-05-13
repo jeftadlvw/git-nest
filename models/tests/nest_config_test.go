@@ -13,7 +13,7 @@ func TestNestConfigValidate(t *testing.T) {
 		config models.NestConfig
 		err    bool
 	}{
-		// no submodules; valid
+		// no submodules; err
 		{
 			name: "no submodules",
 			config: models.NestConfig{
@@ -23,7 +23,7 @@ func TestNestConfigValidate(t *testing.T) {
 			err: false,
 		},
 
-		// one submodule with path; valid
+		// one submodule with path; err
 		{
 			name: "one submodule with path",
 			config: models.NestConfig{
@@ -38,7 +38,7 @@ func TestNestConfigValidate(t *testing.T) {
 			err: false,
 		},
 
-		// two submodules, including a ref; valid
+		// two submodules, including a ref; err
 		{
 			name: "two submodules, including a ref",
 			config: models.NestConfig{
@@ -126,7 +126,7 @@ func TestNestConfigValidate(t *testing.T) {
 			err: true,
 		},
 
-		// duplicate submodule url paths with specified dirs allowed by config; valid
+		// duplicate submodule url paths with specified dirs allowed by config; err
 		{
 			name: "duplicate submodule url paths with specified dirs allowed by config",
 			config: models.NestConfig{
@@ -167,16 +167,18 @@ func TestNestConfigValidate(t *testing.T) {
 		},
 	}
 
-	for _, tc := range cases {
-		err := tc.config.Validate()
-		if tc.err && err == nil {
-			t.Errorf("Validate() for '%s' returned no error but expected one", tc.name)
-		}
-		if !tc.err && err != nil {
-			t.Errorf("Validate() for '%s' returned error, but should've not -> %s", tc.name, err)
-		}
-		if tc.err && err != nil {
-			fmt.Printf("%s -> %s\n", tc.name, err)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestConfigValidate-%d", index+1), func(t *testing.T) {
+			err := tc.config.Validate()
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if tc.err && err != nil {
+				fmt.Printf("%s -> %s\n", tc.name, err)
+			}
+		})
 	}
 }

@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/jeftadlvw/git-nest/models/urls"
 	"testing"
 )
@@ -31,15 +32,17 @@ func TestHttpUrlClean(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
-		tc.url.Clean()
-		if tc.url.Hostname() != tc.expected.Hostname() {
-			t.Errorf("Expected hostname %s in %v, got: %s", tc.expected.Hostname(), tc.url, tc.url.Hostname())
-		}
+	for index, tc := range tests {
+		t.Run(fmt.Sprintf("TestHttpUrlClean-%d", index+1), func(t *testing.T) {
+			tc.url.Clean()
+			if tc.url.Hostname() != tc.expected.Hostname() {
+				t.Fatalf("unexpected hostname %s, expected %s", tc.url.Hostname(), tc.expected.Hostname())
+			}
 
-		if tc.url.Path() != tc.expected.Path() {
-			t.Errorf("Expected path %s in %v, got: %s", tc.expected.Path(), tc.url, tc.url.Path())
-		}
+			if tc.url.Path() != tc.expected.Path() {
+				t.Fatalf("unexpected path %s, expected %s", tc.url.Path(), tc.expected.Path())
+			}
+		})
 	}
 }
 
@@ -56,11 +59,13 @@ func TestHttpUrlHost(t *testing.T) {
 		{urls.HttpUrl{"example.com", 8080, "/", false}, "example.com:8080"},
 	}
 
-	for _, tc := range cases {
-		result := tc.url.Host(false)
-		if result != tc.expected {
-			t.Errorf("Host() for %v returned >%s<, expected >%s<", tc.url, result, tc.expected)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestHttpUrlHost-%d", index+1), func(t *testing.T) {
+			result := tc.url.Host(false)
+			if result != tc.expected {
+				t.Fatalf("returned >%s<, expected >%s<", result, tc.expected)
+			}
+		})
 	}
 }
 
@@ -77,11 +82,13 @@ func TestHttpUrlHostForcePort(t *testing.T) {
 		{urls.HttpUrl{"example.com", 8080, "/", false}, "example.com:8080"},
 	}
 
-	for _, tc := range cases {
-		result := tc.url.Host(true)
-		if result != tc.expected {
-			t.Errorf("Host() for %v returned >%s<, expected >%s<", tc.url, result, tc.expected)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestHttpUrlHostForcePort-%d", index+1), func(t *testing.T) {
+			result := tc.url.Host(true)
+			if result != tc.expected {
+				t.Fatalf("returned >%s<, expected >%s<", result, tc.expected)
+			}
+		})
 	}
 }
 
@@ -96,11 +103,13 @@ func TestHttpUrlIsEmpty(t *testing.T) {
 		{urls.HttpUrl{"example.com", 80, "", false}, false},
 	}
 
-	for _, tc := range cases {
-		result := tc.url.IsEmpty()
-		if result != tc.expected {
-			t.Errorf("Host() for %v returned %t, expected %t", tc.url, result, tc.expected)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestHttpUrlIsEmpty-%d", index+1), func(t *testing.T) {
+			result := tc.url.IsEmpty()
+			if result != tc.expected {
+				t.Fatalf("returned %t, expected %t", result, tc.expected)
+			}
+		})
 	}
 }
 
@@ -117,11 +126,13 @@ func TestHttpUrlHostPathConcat(t *testing.T) {
 		{urls.HttpUrl{"example.com", 443, "/path/", true}, "example.com/path"},
 	}
 
-	for _, tc := range cases {
-		result := tc.url.HostPathConcat()
-		if result != tc.expected {
-			t.Errorf("HostPathConcat() for %v returned %s, expected %s", tc.url, result, tc.expected)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestHttpUrlHostPathConcat-%d", index+1), func(t *testing.T) {
+			result := tc.url.HostPathConcat()
+			if result != tc.expected {
+				t.Fatalf("returned %s, expected %s", result, tc.expected)
+			}
+		})
 	}
 }
 
@@ -138,11 +149,13 @@ func TestHttpUrlHostPathConcatForcePort(t *testing.T) {
 		{urls.HttpUrl{"example.com", 443, "/path/", true}, "example.com:443/path"},
 	}
 
-	for _, tc := range cases {
-		result := tc.url.HostPathConcatStrict()
-		if result != tc.expected {
-			t.Errorf("HostPathConcat() for %v returned %s, expected %s", tc.url, result, tc.expected)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestHttpUrlHostPathConcatForcePort-%d", index+1), func(t *testing.T) {
+			result := tc.url.HostPathConcatStrict()
+			if result != tc.expected {
+				t.Fatalf("returned %s, expected %s", result, tc.expected)
+			}
+		})
 	}
 }
 
@@ -159,11 +172,13 @@ func TestHttpUrlString(t *testing.T) {
 		{urls.HttpUrl{"example.com", 443, "/path/", true}, "https://example.com/path"},
 	}
 
-	for _, tc := range cases {
-		result := tc.url.String()
-		if result != tc.expected {
-			t.Errorf("String() for %v returned %s, expected %s", tc.url, result, tc.expected)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestHttpUrlString-%d", index+1), func(t *testing.T) {
+			result := tc.url.String()
+			if result != tc.expected {
+				t.Fatalf("returned %s, expected %s", result, tc.expected)
+			}
+		})
 	}
 }
 
@@ -178,18 +193,20 @@ func TestHttpUrlUnMarshalText(t *testing.T) {
 		{"invalid_url", urls.HttpUrl{}, true},
 	}
 
-	for _, tc := range cases {
-		var url urls.HttpUrl
-		err := url.UnmarshalText([]byte(tc.input))
-		if tc.err && err == nil {
-			t.Errorf("UnmarshalText() for %s returned no error, expected error", tc.input)
-		}
-		if !tc.err && err != nil {
-			t.Errorf("UnmarshalText() for %s returned error: %s", tc.input, err)
-		}
-		if url != tc.expected {
-			t.Errorf("UnmarshalText() for %s returned %v, expected %v", tc.input, url, tc.expected)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestHttpUrlUnMarshalText-%d", index+1), func(t *testing.T) {
+			var url urls.HttpUrl
+			err := url.UnmarshalText([]byte(tc.input))
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if url != tc.expected {
+				t.Fatalf("returned %v, expected %v", url, tc.expected)
+			}
+		})
 	}
 }
 
@@ -205,14 +222,16 @@ func TestHttpUrlMarshalText(t *testing.T) {
 		{urls.HttpUrl{"example.com", 443, "/path", false}, "http://example.com:443/path"},
 	}
 
-	for _, tc := range cases {
-		result, err := tc.url.MarshalText()
-		if err != nil {
-			t.Errorf("MarshalText() for %v returned error: %s", tc.url, err)
-		}
-		if string(result) != tc.expected {
-			t.Errorf("MarshalText() for %v returned %s, expected %s", tc.url, result, tc.expected)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestHttpUrlMarshalText-%d", index+1), func(t *testing.T) {
+			result, err := tc.url.MarshalText()
+			if err != nil {
+				t.Fatalf("MarshalText() for %v returned error: %s", tc.url, err)
+			}
+			if string(result) != tc.expected {
+				t.Errorf("MarshalText() for %v returned %s, expected %s", tc.url, result, tc.expected)
+			}
+		})
 	}
 }
 
@@ -230,16 +249,18 @@ func TestHttpUrlFromString(t *testing.T) {
 		{"http://example.com:99999", urls.HttpUrl{}, true},
 	}
 
-	for _, tc := range cases {
-		result, err := urls.HttpUrlFromString(tc.input)
-		if tc.err && err == nil {
-			t.Errorf("HttpUrlFromString() for %s returned no error, expected error", tc.input)
-		}
-		if !tc.err && err != nil {
-			t.Errorf("HttpUrlFromString() for %s returned error: %s", tc.input, err)
-		}
-		if result != tc.expected {
-			t.Errorf("HttpUrlFromString() for %s returned %v, expected %v", tc.input, result, tc.expected)
-		}
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestHttpUrlFromString-%d", index+1), func(t *testing.T) {
+			result, err := urls.HttpUrlFromString(tc.input)
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if result != tc.expected {
+				t.Errorf("returned %v, expected %v", result, tc.expected)
+			}
+		})
 	}
 }

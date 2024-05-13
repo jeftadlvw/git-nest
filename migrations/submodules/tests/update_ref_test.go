@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"github.com/jeftadlvw/git-nest/interfaces"
 	"github.com/jeftadlvw/git-nest/migrations/submodules"
 	"github.com/jeftadlvw/git-nest/models"
@@ -25,21 +26,24 @@ func TestUpdateRef(t *testing.T) {
 	}
 
 	for index, tc := range tests {
-		err := submodules.UpdateRef{
-			Submodule: tc.submodule,
-			Ref:       tc.ref,
-		}.Migrate()
+		t.Run(fmt.Sprintf("TestUpdateRef-%d", index+1), func(t *testing.T) {
+			t.Parallel()
+			err := submodules.UpdateRef{
+				Submodule: tc.submodule,
+				Ref:       tc.ref,
+			}.Migrate()
 
-		if tc.err && err == nil {
-			t.Fatalf("TestAppendSubmodule-%d expected error", index+1)
-		}
-		if !tc.err && err != nil {
-			t.Fatalf("TestAppendSubmodule-%d unexpected error: %s", index+1, err)
-		}
-		if !tc.err && tc.submodule != nil {
-			if tc.submodule.Ref != strings.TrimSpace(tc.ref) {
-				t.Fatalf("TestAppendSubmodule-%d: context did not set ref", index+1)
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
 			}
-		}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if !tc.err && tc.submodule != nil {
+				if tc.submodule.Ref != strings.TrimSpace(tc.ref) {
+					t.Fatalf("context did not set ref")
+				}
+			}
+		})
 	}
 }
