@@ -22,7 +22,7 @@ INJECT_BASE := "github.com/jeftadlvw/git-nest/internal"
 INJECT_VERSION_KEY := $(INJECT_BASE)/constants.version
 INJECT_VERSION_VALUE := ${GIT_NEST_BUILD_VERSION}
 
-INJECT_COMMIT_KEY := $(INJECT_BASE)/constants.refHash
+INJECT_COMMIT_KEY := $(INJECT_BASE)/constants.ref
 INJECT_COMMIT_VALUE := ${GIT_NEST_BUILD_COMMIT_SHA}
 
 INJECT_COMPILE_TIME_KEY := $(INJECT_BASE)/constants.compilationTimestampStr
