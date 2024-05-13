@@ -38,6 +38,35 @@ You'll find the compiled binary at `./build/git-nest`. Make sure the binary is i
 ### Using Docker
 > TODO
 
+## Getting started
+There currently is not much documentation outside from the cli help:
+```
+$ git nest
+Usage:
+  git-nest [flags]
+  git-nest [command]
+
+Available Commands:
+  add         Add and clone a remote submodule into this project
+  help        Help about any command
+  info        Print various debug information
+  list        List nested modules
+  remove      Remove a submodule from this project
+  sync        Update and apply state changes
+  verify      Verify configuration and nested modules
+  version     Print git-nest version
+
+Flags:
+  -h, --help      help for git-nest
+  -v, --version   version for git-nest
+
+Use "git-nest [command] --help" for more information about a command.
+```
+Some quick notes:
+- the most relevant commands are `add`, `remove` and `sync`.
+- running these commands will create a `nestmodules.toml` file, which hold all the important information about your nested modules. Commit and share this file. See issue #4 ([click](https://github.com/jeftadlvw/git-nest/issues/4#issue-2229919243)) for information on the general structure.
+- synchronization between the configuration and existing modules is currently as follows: If the directory does not exist, then the module is created as defined in the configuration file. If the module already exists, every change within the module (like branches, commits, ...) are synchronized into the configuration file. This behaviour is suspect to change within the upcoming releases.
+
 ## Development
 
 ### Shell environments
