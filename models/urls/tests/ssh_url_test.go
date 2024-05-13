@@ -11,34 +11,34 @@ func TestSshUrlClean(t *testing.T) {
 		expected urls.SshUrl
 	}{
 		{
-			url:      urls.SshUrl{Hostname: "example.com", User: "", Path: ""},
-			expected: urls.SshUrl{Hostname: "example.com", User: "", Path: ""},
+			url:      urls.SshUrl{HostnameS: "example.com", User: "", PathS: ""},
+			expected: urls.SshUrl{HostnameS: "example.com", User: "", PathS: ""},
 		},
 		{
-			url:      urls.SshUrl{Hostname: "  example.com  ", User: "  hello  ", Path: "  /path/to/resource  "},
-			expected: urls.SshUrl{Hostname: "example.com", User: "hello", Path: "/path/to/resource"}},
+			url:      urls.SshUrl{HostnameS: "  example.com  ", User: "  hello  ", PathS: "  /path/to/resource  "},
+			expected: urls.SshUrl{HostnameS: "example.com", User: "hello", PathS: "/path/to/resource"}},
 		{
-			url:      urls.SshUrl{Hostname: "", User: "", Path: "path/to/resource"},
-			expected: urls.SshUrl{Hostname: "", User: "", Path: "path/to/resource"},
+			url:      urls.SshUrl{HostnameS: "", User: "", PathS: "path/to/resource"},
+			expected: urls.SshUrl{HostnameS: "", User: "", PathS: "path/to/resource"},
 		},
 		{
-			url:      urls.SshUrl{Hostname: "example.com", User: "user", Path: "/path/to/resource/"},
-			expected: urls.SshUrl{Hostname: "example.com", User: "user", Path: "/path/to/resource"},
+			url:      urls.SshUrl{HostnameS: "example.com", User: "user", PathS: "/path/to/resource/"},
+			expected: urls.SshUrl{HostnameS: "example.com", User: "user", PathS: "/path/to/resource"},
 		},
 	}
 
 	for _, tc := range tests {
 		tc.url.Clean()
-		if tc.url.Hostname != tc.expected.Hostname {
-			t.Errorf("Expected hostname >%s< in %v, got: >%s<", tc.expected.Hostname, tc.url, tc.url.Hostname)
+		if tc.url.HostnameS != tc.expected.HostnameS {
+			t.Errorf("Expected hostname >%s< in %v, got: >%s<", tc.expected.HostnameS, tc.url, tc.url.HostnameS)
 		}
 
 		if tc.url.User != tc.expected.User {
-			t.Errorf("Expected user >%s< in %v, got: >%s<", tc.expected.User, tc.url, tc.url.Path)
+			t.Errorf("Expected user >%s< in %v, got: >%s<", tc.expected.User, tc.url, tc.url.PathS)
 		}
 
-		if tc.url.Path != tc.expected.Path {
-			t.Errorf("Expected path >%s< in %v, got: >%s<", tc.expected.Path, tc.url, tc.url.Path)
+		if tc.url.PathS != tc.expected.PathS {
+			t.Errorf("Expected path >%s< in %v, got: >%s<", tc.expected.PathS, tc.url, tc.url.PathS)
 		}
 	}
 }

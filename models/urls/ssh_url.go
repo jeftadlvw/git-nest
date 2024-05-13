@@ -6,13 +6,13 @@ import (
 )
 
 /*
-HttpUrl represents a regular ssh url.
+SshUrl represents a regular ssh url.
 */
 type SshUrl struct {
 	/*
-		Hostname contains the domain name or ip address.
+		HostnameS contains the domain name or ip address.
 	*/
-	Hostname string
+	HostnameS string
 
 	/*
 		User contains the username that want to connect to the host.
@@ -20,31 +20,45 @@ type SshUrl struct {
 	User string
 
 	/*
-		Path contains anything else specifying the connection.
+		PathS contains anything else specifying the connection.
 	*/
-	Path string
+	PathS string
 }
 
 /*
 Clean cleans up struct values.
 */
 func (u *SshUrl) Clean() {
-	u.Hostname = strings.TrimSpace(u.Hostname)
+	u.HostnameS = strings.TrimSpace(u.HostnameS)
 	u.User = strings.TrimSpace(u.User)
 
-	u.Path = strings.TrimSpace(u.Path)
-	if u.Path != "/" {
-		u.Path = strings.TrimSuffix(u.Path, "/")
+	u.PathS = strings.TrimSpace(u.PathS)
+	if u.PathS != "/" {
+		u.PathS = strings.TrimSuffix(u.PathS, "/")
 	}
-	u.Path = strings.TrimPrefix(u.Path, ":")
+	u.PathS = strings.TrimPrefix(u.PathS, ":")
 }
 
 /*
-IsEmpty returns whether Hostname or User is empty or not. It calls Clean() beforehand.
+IsEmpty returns whether HostnameS or User is empty or not. It calls Clean() beforehand.
 */
 func (u *SshUrl) IsEmpty() bool {
 	u.Clean()
-	return u.Hostname == "" || u.User == ""
+	return u.HostnameS == "" || u.User == ""
+}
+
+/*
+Hostname returns this Url's hostname.
+*/
+func (u *SshUrl) Hostname() string {
+	return u.HostnameS
+}
+
+/*
+Path returns this Url's path.
+*/
+func (u *SshUrl) Path() string {
+	return u.PathS
 }
 
 /*
@@ -57,11 +71,18 @@ func (u *SshUrl) HostPathConcat() string {
 
 	var path string
 
-	if u.Path != "" {
-		path = ":" + u.Path
+	if u.PathS != "" {
+		path = ":" + u.PathS
 	}
 
-	return fmt.Sprintf("%s%s", u.Hostname, path)
+	return fmt.Sprintf("%s%s", u.HostnameS, path)
+}
+
+/*
+HostPathConcatStrict returns the url forcing Port to be concatenated as well.
+*/
+func (u *SshUrl) HostPathConcatStrict() string {
+	return u.HostPathConcat()
 }
 
 /*
@@ -133,14 +154,14 @@ func SshUrlFromString(s string) (SshUrl, error) {
 		return SshUrl{}, fmt.Errorf("ssh urls may contain only one port")
 	}
 
-	u.Hostname = hostPathColonSplit[0]
+	u.HostnameS = hostPathColonSplit[0]
 	if len(hostPathColonSplit) == 2 {
-		u.Path = hostPathColonSplit[1]
+		u.PathS = hostPathColonSplit[1]
 	}
 
-	if strings.Contains(u.Hostname, "/") {
+	if strings.Contains(u.HostnameS, "/") {
 		return SshUrl{}, fmt.Errorf("ssh hostname must not contain '/'")
 	}
 
-	return SshUrl{u.Hostname, u.User, u.Path}, nil
+	return SshUrl{u.HostnameS, u.User, u.PathS}, nil
 }
