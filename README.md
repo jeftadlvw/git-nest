@@ -9,6 +9,18 @@
 
 ## Installation
 
+### Binaries
+We provide pre-built binary files for major platforms and architectures at every release. You can find them [here](https://github.com/jeftadlvw/git-nest/releases).
+
+Download the binary for your operating system and processor, store it somewhere safe and rename it to `git-nest`. Add the path you downloaded `git-nest` into to your system `PATH` variables in order for `git` to automatically register it as a subcommand.
+
+Verify you have a working installation by running
+```shell
+git nest info
+```
+
+We plan on providing an installation script.
+
 ### From source
 
 You should have the following requirements installed into your local environment:
