@@ -1,11 +1,9 @@
 # git-nest
 
-**git-nest** is a _git_ command line extension for nesting external repositories in your project without your parent repository noticing.
+**git-nest** is a _git_ command line extension for loosely nesting external repositories into your repository. It's an alternative to the default `git-submodule` that does add submodule information to the index, but just works from a configuration file.
 
-
-> This project is in early development.<br>
-> Source code may be unstable and documentation inaccurate.<br>
-> Proceed and use with caution!
+> [!IMPORTANT]
+> This project is in early development. Source code may be unstable and documentation inaccurate. Proceed and use with caution. Feel free to open an issue!
 
 ## Installation
 
@@ -36,6 +34,9 @@ make
 ```
 
 You'll find the compiled binary at `./build/git-nest`. Make sure the binary is in your PATH variable, so _git_ is able to find it.
+
+### Using Docker
+> TODO
 
 ## Development
 
@@ -77,6 +78,8 @@ As of current development, `go-1.22` is required to build the source code.
 - `git-test`: test git integration
 - `debug`: echo project root directory and other Makefile variables
 
+## Roadmap
+We are working on it. We have many ideas and much room for improvements. We'll structure and prioritize our internal list before releasing it to the public.
 
 ## Contributing
-Reviewing and accepting contributions is temporarily suspended until the project's foundation is established. More information will follow soon.
+Reviewing and accepting contributions is temporarily suspended until the project's foundation is established. More information will follow soon. Issues and bugs however are welcome!
