@@ -20,7 +20,7 @@ FmtSubmodulesGitIgnore returns a string that formats a slice of models.Submodule
 func FmtSubmodulesGitIgnore(submodules []models.Submodule) string {
 	sb := strings.Builder{}
 	for _, submodule := range submodules {
-		sb.WriteString(submodule.Path.String())
+		sb.WriteString(submodule.Path.UnixString())
 		sb.WriteString("\n")
 	}
 

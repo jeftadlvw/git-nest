@@ -28,7 +28,7 @@ func TestPathExists(t *testing.T) {
 	}
 
 	if tempDir.IsFile() {
-		t.Errorf("Path is file but should be dir: %s", tempDir.String())
+		t.Errorf("PathS is file but should be dir: %s", tempDir.String())
 	}
 
 	if !tempFile.Exists() {
@@ -40,7 +40,7 @@ func TestPathExists(t *testing.T) {
 	}
 
 	if tempFile.IsDir() {
-		t.Errorf("Path is file but should be dir: %s", tempFile.String())
+		t.Errorf("PathS is file but should be dir: %s", tempFile.String())
 	}
 
 	os.RemoveAll(tempDir.String())

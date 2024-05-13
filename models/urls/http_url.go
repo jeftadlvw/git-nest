@@ -13,9 +13,9 @@ HttpUrl represents a regular http url.
 */
 type HttpUrl struct {
 	/*
-		Hostname contains the domain name or ip address.
+		HostnameS contains the domain name or ip address.
 	*/
-	Hostname string
+	HostnameS string
 
 	/*
 		Port contains the host's port.
@@ -23,9 +23,9 @@ type HttpUrl struct {
 	Port int
 
 	/*
-		Path contains any further information encoded in the url path.
+		PathS contains any further information encoded in the url path.
 	*/
-	Path string
+	PathS string
 
 	/*
 		Secure is a flag that defines whether this HttpUrl should be treated as an encrypted connection.
@@ -37,22 +37,22 @@ type HttpUrl struct {
 Clean cleans up struct values.
 */
 func (u *HttpUrl) Clean() {
-	u.Hostname = strings.TrimSpace(u.Hostname)
+	u.HostnameS = strings.TrimSpace(u.HostnameS)
 
-	u.Path = strings.TrimSpace(u.Path)
-	u.Path = "/" + strings.Trim(u.Path, "/")
+	u.PathS = strings.TrimSpace(u.PathS)
+	u.PathS = "/" + strings.Trim(u.PathS, "/")
 }
 
 /*
-Host returns the Hostname and Port in a formatted matter.
+Host returns the HostnameS and Port in a formatted matter.
 */
 func (u *HttpUrl) Host(forcePort bool) string {
 	var host string
 
-	if strings.Contains(u.Hostname, ":") {
-		host = fmt.Sprintf("[%s]", u.Hostname)
+	if strings.Contains(u.HostnameS, ":") {
+		host = fmt.Sprintf("[%s]", u.HostnameS)
 	} else {
-		host = u.Hostname
+		host = u.HostnameS
 	}
 
 	if forcePort || ((!u.Secure && u.Port != 80) || (u.Secure && u.Port != 443)) {
@@ -63,11 +63,25 @@ func (u *HttpUrl) Host(forcePort bool) string {
 }
 
 /*
-IsEmpty returns whether Hostname is empty or not. It calls Clean() beforehand.
+IsEmpty returns whether HostnameS is empty or not. It calls Clean() beforehand.
 */
 func (u *HttpUrl) IsEmpty() bool {
 	u.Clean()
-	return u.Hostname == ""
+	return u.HostnameS == ""
+}
+
+/*
+Hostname returns this Url's hostname.
+*/
+func (u *HttpUrl) Hostname() string {
+	return u.HostnameS
+}
+
+/*
+Path returns this Url's path.
+*/
+func (u *HttpUrl) Path() string {
+	return u.PathS
 }
 
 /*
@@ -78,9 +92,9 @@ func (u *HttpUrl) HostPathConcat() string {
 }
 
 /*
-HostPathConcatForcePort returns the url forcing Port to be concatenated as well.
+HostPathConcatStrict returns the url forcing Port to be concatenated as well.
 */
-func (u *HttpUrl) HostPathConcatForcePort() string {
+func (u *HttpUrl) HostPathConcatStrict() string {
 	return u.hostPathConcat(true)
 }
 
@@ -93,6 +107,8 @@ func (u *HttpUrl) String() string {
 		return ""
 	}
 
+	u.Clean()
+
 	var scheme string
 
 	if u.Secure {
@@ -102,7 +118,7 @@ func (u *HttpUrl) String() string {
 	}
 
 	hostPathConcat := u.HostPathConcat()
-	if u.Path == "/" {
+	if u.PathS == "/" {
 		hostPathConcat = hostPathConcat + "/"
 	}
 
@@ -140,7 +156,7 @@ func HttpUrlFromString(s string) (HttpUrl, error) {
 	}
 
 	if !strings.Contains(u.Scheme, "http") {
-		return emptyUrl, errors.New("scheme is not http")
+		return emptyUrl, errors.New("scheme is not http-based")
 	}
 
 	var (
@@ -166,6 +182,14 @@ func HttpUrlFromString(s string) (HttpUrl, error) {
 	return HttpUrl{u.Hostname(), port, u.Path, secure}, nil
 }
 
+/*
+Validate validates this HttpUrl.
+*/
+func (u *HttpUrl) Validate() error {
+	_, err := HttpUrlFromString(u.String())
+	return err
+}
+
 func (u *HttpUrl) hostPathConcat(forcePort bool) string {
 	if u.IsEmpty() {
 		return ""
@@ -173,8 +197,8 @@ func (u *HttpUrl) hostPathConcat(forcePort bool) string {
 
 	var path string
 
-	if u.Path != "/" {
-		path = u.Path
+	if u.PathS != "/" {
+		path = u.PathS
 	}
 
 	return fmt.Sprintf("%s%s", u.Host(forcePort), path)

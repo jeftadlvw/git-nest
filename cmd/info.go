@@ -14,8 +14,9 @@ import (
 
 func createInfoCmd() *cobra.Command {
 	var infoCmd = &cobra.Command{
-		Use:   "info",
-		Short: "Print various debug information",
+		Use:     "info",
+		Aliases: []string{"i"},
+		Short:   "Print various debug information",
 		Run: func(cmd *cobra.Command, args []string) {
 			redact, _ := cmd.Flags().GetBool("redact")
 			printDebugInformation(redact)
@@ -36,6 +37,7 @@ func printDebugInformation(redact bool) {
 	workingDir := context.WorkingDirectory.String()
 	rootDir := context.ProjectRoot.String()
 	repositoryRoot := context.GitRepositoryRoot.String()
+	validNestedModules := 0
 
 	// beautify compilation time output
 	compilationTime := "unknown"
@@ -81,6 +83,12 @@ func printDebugInformation(redact bool) {
 		workingDir = "."
 	}
 
+	for _, validNestedModule := range internal.SubmodulesExist(context.Config.Submodules, context.ProjectRoot) {
+		if validNestedModule.Status == internal.SUBMODULE_EXISTS_OK {
+			validNestedModules++
+		}
+	}
+
 	infoMap := []utils.Node{
 		{"Binary", []utils.Node{
 			{"Version", constants.Version()},
@@ -97,12 +105,17 @@ func printDebugInformation(redact bool) {
 			{"Git repository", context.IsGitRepository},
 			{"Repository root", repositoryRoot},
 		}},
+
+		{"Valid modules", fmt.Sprintf("%d/%d", validNestedModules, len(context.Config.Submodules))},
 	}
 
-	fmt.Printf(utils.FmtTree("   ", true, infoMap...))
+	fmt.Println(utils.FmtTree(utils.FmtTreeConfig{
+		Indent:             "   ",
+		NewLinesAtTopLevel: true,
+	}, infoMap...))
 
 	// estimate if binary is local dev build
 	if strings.HasPrefix(constants.Version(), "[") || constants.Ref() == "unset" || constants.CompilationTimestamp() == -1 {
-		fmt.Printf("\n\nThis binary is most likely a local development built.\n")
+		fmt.Printf("\nThis binary is most likely a local development built.\n")
 	}
 }

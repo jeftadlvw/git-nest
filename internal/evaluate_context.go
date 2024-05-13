@@ -7,14 +7,14 @@ EvaluateContext is a wrapper function for internal.CreateContext that also perfo
 the context's configuration.
 */
 func EvaluateContext() (models.NestContext, error) {
-	context, err := CreateContext()
+	context, err := CreateContextFromCurrentWorkingDir()
 	if err != nil {
-		return context, err
+		return models.NestContext{}, err
 	}
 
 	err = context.Config.Validate()
 	if err != nil {
-		return context, err
+		return models.NestContext{}, err
 	}
 
 	return context, nil

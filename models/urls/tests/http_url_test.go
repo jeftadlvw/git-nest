@@ -11,34 +11,34 @@ func TestHttpUrlClean(t *testing.T) {
 		expected urls.HttpUrl
 	}{
 		{
-			url:      urls.HttpUrl{Hostname: "  example.com  ", Path: "  /path/to/resource  "},
-			expected: urls.HttpUrl{Hostname: "example.com", Path: "/path/to/resource"}},
+			url:      urls.HttpUrl{HostnameS: "  example.com  ", PathS: "  /path/to/resource  "},
+			expected: urls.HttpUrl{HostnameS: "example.com", PathS: "/path/to/resource"}},
 		{
-			url:      urls.HttpUrl{Hostname: "example.com", Path: ""},
-			expected: urls.HttpUrl{Hostname: "example.com", Path: "/"},
+			url:      urls.HttpUrl{HostnameS: "example.com", PathS: ""},
+			expected: urls.HttpUrl{HostnameS: "example.com", PathS: "/"},
 		},
 		{
-			url:      urls.HttpUrl{Hostname: "", Path: "path/to/resource"},
-			expected: urls.HttpUrl{Hostname: "", Path: "/path/to/resource"},
+			url:      urls.HttpUrl{HostnameS: "", PathS: "path/to/resource"},
+			expected: urls.HttpUrl{HostnameS: "", PathS: "/path/to/resource"},
 		},
 		{
-			url:      urls.HttpUrl{Hostname: "example.com", Path: "/path/to/resource/"},
-			expected: urls.HttpUrl{Hostname: "example.com", Path: "/path/to/resource"},
+			url:      urls.HttpUrl{HostnameS: "example.com", PathS: "/path/to/resource/"},
+			expected: urls.HttpUrl{HostnameS: "example.com", PathS: "/path/to/resource"},
 		},
 		{
-			url:      urls.HttpUrl{Hostname: "example.com", Path: "/path/to/resource"},
-			expected: urls.HttpUrl{Hostname: "example.com", Path: "/path/to/resource"},
+			url:      urls.HttpUrl{HostnameS: "example.com", PathS: "/path/to/resource"},
+			expected: urls.HttpUrl{HostnameS: "example.com", PathS: "/path/to/resource"},
 		},
 	}
 
 	for _, tc := range tests {
 		tc.url.Clean()
-		if tc.url.Hostname != tc.expected.Hostname {
-			t.Errorf("Expected hostname %s in %v, got: %s", tc.expected.Hostname, tc.url, tc.url.Hostname)
+		if tc.url.Hostname() != tc.expected.Hostname() {
+			t.Errorf("Expected hostname %s in %v, got: %s", tc.expected.Hostname(), tc.url, tc.url.Hostname())
 		}
 
-		if tc.url.Path != tc.expected.Path {
-			t.Errorf("Expected path %s in %v, got: %s", tc.expected.Path, tc.url, tc.url.Path)
+		if tc.url.Path() != tc.expected.Path() {
+			t.Errorf("Expected path %s in %v, got: %s", tc.expected.Path(), tc.url, tc.url.Path())
 		}
 	}
 }
@@ -139,7 +139,7 @@ func TestHttpUrlHostPathConcatForcePort(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		result := tc.url.HostPathConcatForcePort()
+		result := tc.url.HostPathConcatStrict()
 		if result != tc.expected {
 			t.Errorf("HostPathConcat() for %v returned %s, expected %s", tc.url, result, tc.expected)
 		}

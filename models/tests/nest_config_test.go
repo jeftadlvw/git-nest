@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestNestConfig_Validate(t *testing.T) {
+func TestNestConfigValidate(t *testing.T) {
 	cases := []struct {
 		name   string
 		config models.NestConfig
@@ -23,20 +23,6 @@ func TestNestConfig_Validate(t *testing.T) {
 			err: false,
 		},
 
-		// one submodule; valid
-		{
-			name: "one submodule",
-			config: models.NestConfig{
-				Config: models.Config{},
-				Submodules: []models.Submodule{
-					{
-						Url: urls.HttpUrl{"example.com", 443, "", true},
-					},
-				},
-			},
-			err: false,
-		},
-
 		// one submodule with path; valid
 		{
 			name: "one submodule with path",
@@ -45,7 +31,7 @@ func TestNestConfig_Validate(t *testing.T) {
 				Submodules: []models.Submodule{
 					{
 						Path: "foo",
-						Url:  urls.HttpUrl{"example.com", 80, "path", false},
+						Url:  &urls.HttpUrl{"example.com", 80, "path", false},
 					},
 				},
 			},
@@ -60,11 +46,11 @@ func TestNestConfig_Validate(t *testing.T) {
 				Submodules: []models.Submodule{
 					{
 						Path: "foo",
-						Url:  urls.HttpUrl{"example.com", 80, "path", false},
+						Url:  &urls.HttpUrl{"example.com", 80, "path", false},
 					},
 					{
 						Path: "bar",
-						Url:  urls.HttpUrl{"example.org", 80, "path", false},
+						Url:  &urls.HttpUrl{"example.org", 80, "path", false},
 						Ref:  "main",
 					},
 				},
@@ -80,11 +66,11 @@ func TestNestConfig_Validate(t *testing.T) {
 				Submodules: []models.Submodule{
 					{
 						Path: "foo",
-						Url:  urls.HttpUrl{"example.com", 80, "path", false},
+						Url:  &urls.HttpUrl{"example.com", 80, "path", false},
 					},
 					{
 						Path: "foo",
-						Url:  urls.HttpUrl{"example.org", 80, "path", false},
+						Url:  &urls.HttpUrl{"example.org", 80, "path", false},
 						Ref:  "main",
 					},
 				},
@@ -111,10 +97,10 @@ func TestNestConfig_Validate(t *testing.T) {
 				Config: models.Config{},
 				Submodules: []models.Submodule{
 					{
-						Url: urls.HttpUrl{"example.com", 443, "path", true},
+						Url: &urls.HttpUrl{"example.com", 443, "path", true},
 					},
 					{
-						Url: urls.HttpUrl{"example.com", 443, "path", true},
+						Url: &urls.HttpUrl{"example.com", 443, "path", true},
 					},
 				},
 			},
@@ -129,11 +115,11 @@ func TestNestConfig_Validate(t *testing.T) {
 				Submodules: []models.Submodule{
 					{
 						Path: "foo",
-						Url:  urls.HttpUrl{"example.com", 443, "path", true},
+						Url:  &urls.HttpUrl{"example.com", 443, "path", true},
 					},
 					{
 						Path: "bar",
-						Url:  urls.HttpUrl{"example.com", 443, "path", true},
+						Url:  &urls.HttpUrl{"example.com", 443, "path", true},
 					},
 				},
 			},
@@ -148,11 +134,11 @@ func TestNestConfig_Validate(t *testing.T) {
 				Submodules: []models.Submodule{
 					{
 						Path: "foo",
-						Url:  urls.HttpUrl{"example.com", 443, "path", true},
+						Url:  &urls.HttpUrl{"example.com", 443, "path", true},
 					},
 					{
 						Path: "bar",
-						Url:  urls.HttpUrl{"example.com", 443, "path", true},
+						Url:  &urls.HttpUrl{"example.com", 443, "path", true},
 					},
 				},
 			},
@@ -167,12 +153,12 @@ func TestNestConfig_Validate(t *testing.T) {
 				Submodules: []models.Submodule{
 					{
 						Path: "foo",
-						Url:  urls.HttpUrl{"example.com", 443, "path", true},
+						Url:  &urls.HttpUrl{"example.com", 443, "path", true},
 						Ref:  "main",
 					},
 					{
 						Path: "bar",
-						Url:  urls.HttpUrl{"example.com", 443, "path", true},
+						Url:  &urls.HttpUrl{"example.com", 443, "path", true},
 						Ref:  "main",
 					},
 				},

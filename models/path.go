@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -12,6 +13,8 @@ const (
 	FILE     = iota
 	DIR      = iota
 )
+
+var unixStringReplacePattern = regexp.MustCompile(`/+`)
 
 /*
 Path is a string-typed type that abstracts path operations.
@@ -43,7 +46,9 @@ func (p *Path) Exists() bool {
 Clean returns an OS-fitting, cleaned up copy of this Path, based on the stdlib filepath.Clean.
 */
 func (p *Path) Clean() Path {
-	return Path(filepath.Clean(strings.TrimSpace(string(*p))))
+	cleanedPath := filepath.Clean(strings.TrimSpace(string(*p)))
+	cleanedPath = strings.ReplaceAll(cleanedPath, strings.Repeat(string(filepath.Separator), 2), string(filepath.Separator))
+	return Path(cleanedPath)
 }
 
 /*
@@ -69,6 +74,14 @@ func (p *Path) Parts() []string {
 }
 
 /*
+Relative returns the relative path from another Path to this Path, based on the stdlib filepath.Rel.
+*/
+func (p *Path) Relative(o Path) (Path, error) {
+	rp, err := filepath.Rel(p.String(), o.String())
+	return Path(rp), err
+}
+
+/*
 EmptyOrAtRoot returns whether this Path is an empty string, at a root-level-directory
 or at its top-most parent directory of its original path.
 */
@@ -80,7 +93,7 @@ func (p *Path) EmptyOrAtRoot() bool {
 Empty returns whether this Path is an empty string.
 */
 func (p *Path) Empty() bool {
-	return p.String() == ""
+	return strings.TrimSpace(string(*p)) == ""
 }
 
 /*
@@ -148,7 +161,23 @@ func (p *Path) BContains(pattern string) bool {
 String returns this Path as its base type, removing the need for specific casts.
 */
 func (p *Path) String() string {
-	return strings.TrimSpace(string(*p))
+	if p.EmptyOrAtRoot() {
+		return ""
+	}
+	return string(p.Clean())
+}
+
+/*
+UnixString ensures the path is formatted as a UNIX path (using '/' as path separators).
+*/
+func (p *Path) UnixString() string {
+	str := p.String()
+
+	str = strings.ReplaceAll(str, string(filepath.Separator), "/")
+	str = strings.ReplaceAll(str, "\\", "/")
+	str = unixStringReplacePattern.ReplaceAllString(str, "/")
+
+	return str
 }
 
 /*
@@ -174,6 +203,10 @@ func pathCheck(p Path) int {
 		if os.IsNotExist(err) {
 			return NO_EXIST
 		}
+	}
+
+	if fileInfo == nil {
+		return NO_EXIST
 	}
 
 	if fileInfo.IsDir() {

@@ -31,33 +31,43 @@ func (c NestConfig) Validate() error {
 		return err
 	}
 
-	// validate each submodule
+	// validate each submodule and check for duplicates
 	for index, submodule := range c.Submodules {
 		err = submodule.Validate()
 		if err != nil {
 			return fmt.Errorf("error at submodule index %d: %w", index, err)
 		}
+
+		// submodules may not escape project root (by having / or ../ as prefix)
+		if strings.HasPrefix(submodule.Path.String(), string(filepath.Separator)) {
+			return fmt.Errorf("submodule path must be relative to project root")
+		}
+
+		if strings.HasPrefix(submodule.Path.String(), "..") {
+			return fmt.Errorf("submodule path escapes project root (%s)", submodule.Path)
+		}
 	}
 
-	// check for duplicates
+	err = CheckForDuplicateSubmodules(c.Config.AllowDuplicateOrigins, c.Submodules...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/*
+CheckForDuplicateSubmodules syntactically checks if any duplicate submodules exist within a slice of Submodule.
+*/
+func CheckForDuplicateSubmodules(allowDuplicateOrigins bool, submodules ...Submodule) error {
 	var (
+		added         bool
 		identifierSet = mapset.NewSet[string]()
 		pathSet       = mapset.NewSet[string]()
 		remoteUrlSet  = mapset.NewSet[string]()
 	)
 
-	for _, submodule := range c.Submodules {
-		var added bool
-
-		// submodules may not escape project root (by having / or ../ as prefix)
-		if strings.HasPrefix(submodule.Path.String(), string(filepath.Separator)) {
-			return fmt.Errorf("submodule path is relative to project root")
-		}
-
-		if strings.Contains(submodule.Path.String(), string(filepath.Separator)) {
-			return fmt.Errorf("submodule path escapes project root (%s)", submodule.Path)
-		}
-
+	for _, submodule := range submodules {
 		// check for 100% duplicates
 		added = identifierSet.Add(submodule.Identifier())
 		if !added {
@@ -75,7 +85,7 @@ func (c NestConfig) Validate() error {
 		// duplicate refs are automatically allowed too (no ref is a ref to something default!)
 		submoduleRemoteUrl := submodule.Url.String()
 		added = remoteUrlSet.Add(submoduleRemoteUrl)
-		if !added && !c.Config.AllowDuplicateOrigins {
+		if !added && !allowDuplicateOrigins {
 			return fmt.Errorf("submodule origin urls %s defined multiple times", submoduleRemoteUrl)
 		}
 	}
