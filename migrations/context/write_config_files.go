@@ -7,13 +7,13 @@ import (
 )
 
 type WriteConfigFiles struct {
-	Context models.NestContext
+	Context *models.NestContext
 }
 
 func (m WriteConfigFiles) Migrate() error {
 	var err error
 
-	_, _, err1, err2 := internal.WriteProjectConfigFiles(m.Context)
+	_, _, err1, err2 := internal.WriteProjectConfigFiles(*m.Context)
 	if err1 != nil {
 		err = err1
 	} else if err2 != nil {

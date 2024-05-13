@@ -46,7 +46,7 @@ func removeSubmodule(p models.Path, deleteDirectory bool, forceDelete bool) erro
 		return err
 	}
 
-	actionMigrations = append(actionMigrations, mcontext.WriteConfigFiles{Context: context})
+	actionMigrations = append(actionMigrations, mcontext.WriteConfigFiles{Context: &context})
 	err = migrations.RunMigrations(actionMigrations...)
 	if err != nil {
 		return err
