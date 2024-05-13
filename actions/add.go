@@ -72,13 +72,13 @@ func AddSubmoduleInContext(context *models.NestContext, url urls.HttpUrl, ref st
 
 	newSubmodule := models.Submodule{
 		Path: relativeToRoot,
-		Url:  url,
+		Url:  &url,
 		Ref:  ref,
 	}
 
 	// append submodule and clone it
 	migrationChain.Add(mcontext.AppendSubmodule{Context: context, Submodule: newSubmodule})
-	migrationChain.Add(git.Clone{Url: &newSubmodule.Url, Path: absolutePath.Parent(), CloneDirName: absolutePath.Base()})
+	migrationChain.Add(git.Clone{Url: newSubmodule.Url, Path: absolutePath.Parent(), CloneDirName: absolutePath.Base()})
 
 	if newSubmodule.Ref != "" {
 		localSubmoduleClonePath := relativeToRoot.String()

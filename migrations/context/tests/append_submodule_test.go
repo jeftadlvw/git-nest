@@ -27,7 +27,7 @@ func TestAppendSubmodule(t *testing.T) {
 		{nil, models.Submodule{}, true},
 		{&models.NestContext{}, models.Submodule{}, true},
 		{&models.NestContext{}, models.Submodule{Path: "foo"}, true},
-		{&models.NestContext{}, models.Submodule{Path: "foo", Url: exampleUrl}, false},
+		{&models.NestContext{}, models.Submodule{Path: "foo", Url: &exampleUrl}, false},
 	}
 
 	for index, tc := range tests {

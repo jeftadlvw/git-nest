@@ -143,7 +143,7 @@ func TestRemoveSubmoduleFromContext(t *testing.T) {
 			if !tc.err {
 				for mindex, migration := range migrationArr {
 					if reflect.TypeOf(migration) != reflect.TypeOf(tc.expectedMigrations[mindex]) {
-						t.Fatalf("AddSubmoduleInContext() for case %d had unexpected migration at index %d: %s != %s", index+1, mindex, reflect.TypeOf(migration), reflect.TypeOf(tc.expectedMigrations[mindex]))
+						t.Fatalf("AddSubmoduleInContext() for case %d had unexpected migration at index %d: %T != %T", index+1, mindex, migration, tc.expectedMigrations[mindex])
 					}
 				}
 			}

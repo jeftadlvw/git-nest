@@ -10,7 +10,7 @@ import (
 
 type Submodule struct {
 	Path Path
-	Url  urls.HttpUrl
+	Url  *urls.HttpUrl
 	Ref  string
 }
 
@@ -30,7 +30,7 @@ Format: Submodule.Url@Submodule.Ref
 func (s *Submodule) RemoteIdentifier() string {
 	s.Clean()
 
-	hostPathConcat := s.Url.HostPathConcatForcePort()
+	hostPathConcat := s.Url.HostPathConcatStrict()
 	if s.Ref != "" {
 		hostPathConcat = hostPathConcat + "@" + s.Ref
 	}
@@ -49,7 +49,7 @@ func (s *Submodule) Identifier() string {
 	pathSuffix := ""
 
 	if s.Path.EmptyOrAtRoot() {
-		pathSuffix = filepath.Base(s.Url.Path)
+		pathSuffix = filepath.Base(s.Url.Path())
 	} else {
 		pathSuffix = s.Path.String()
 	}
@@ -82,12 +82,12 @@ func (s *Submodule) Validate() error {
 	}
 
 	// url must be set
-	if s.Url.String() == "" {
+	if s.Url == nil || s.Url.String() == "" {
 		return fmt.Errorf("submodule url is required")
 	}
 
 	if _, err := url.Parse(s.Url.String()); err != nil {
-		return fmt.Errorf("submodule urls is invalid")
+		return fmt.Errorf("submodule url is invalid")
 	}
 
 	// no whitespaces in ref

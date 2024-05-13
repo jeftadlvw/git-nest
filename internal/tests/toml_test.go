@@ -56,7 +56,7 @@ func TestSubmoduleArrTomlStrFromNestConfig(t *testing.T) {
 
 	nestConfig := models.NestConfig{}
 	nestConfig.Submodules = append(nestConfig.Submodules, models.Submodule{})
-	nestConfig.Submodules = append(nestConfig.Submodules, models.Submodule{"", urls.HttpUrl{"example.com", 80, "/foo", false}, ""})
+	nestConfig.Submodules = append(nestConfig.Submodules, models.Submodule{"", &urls.HttpUrl{"example.com", 80, "/foo", false}, ""})
 
 	expectedOutput := `[[submodule]]
   path = ""
@@ -87,7 +87,7 @@ func TestSubmoduleToTomlConfig(t *testing.T) {
 	}
 
 	// set values
-	submodule = models.Submodule{"example/path", urls.HttpUrl{"example.com", 443, "", true}, "example-ref"}
+	submodule = models.Submodule{"example/path", &urls.HttpUrl{"example.com", 443, "", true}, "example-ref"}
 	expectedOutput = `[[submodule]]
   path = "example/path"
   url = "https://example.com/"
@@ -98,7 +98,7 @@ func TestSubmoduleToTomlConfig(t *testing.T) {
 	}
 
 	// double seperators
-	submodule = models.Submodule{"example//path", urls.HttpUrl{"example.com", 443, "", true}, "example-ref"}
+	submodule = models.Submodule{"example//path", &urls.HttpUrl{"example.com", 443, "", true}, "example-ref"}
 	expectedOutput = `[[submodule]]
   path = "example/path"
   url = "https://example.com/"
@@ -111,7 +111,7 @@ func TestSubmoduleToTomlConfig(t *testing.T) {
 	fmt.Println("2------")
 
 	// windows path style
-	submodule = models.Submodule{"example\\path", urls.HttpUrl{"example.com", 443, "", true}, "example-ref"}
+	submodule = models.Submodule{"example\\path", &urls.HttpUrl{"example.com", 443, "", true}, "example-ref"}
 	expectedOutput = `[[submodule]]
   path = "example/path"
   url = "https://example.com/"
@@ -122,7 +122,7 @@ func TestSubmoduleToTomlConfig(t *testing.T) {
 	}
 
 	// something messed up
-	submodule = models.Submodule{"example\\\\path", urls.HttpUrl{"example.com", 443, "", true}, "example-ref"}
+	submodule = models.Submodule{"example\\\\path", &urls.HttpUrl{"example.com", 443, "", true}, "example-ref"}
 	expectedOutput = `[[submodule]]
   path = "example/path"
   url = "https://example.com/"

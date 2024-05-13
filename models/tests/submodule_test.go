@@ -9,7 +9,7 @@ import (
 func TestSubmoduleCleanUp(t *testing.T) {
 	submodule := models.Submodule{
 		Path: "/valid/../path",
-		Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+		Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 		Ref:  "  main  ",
 	}
 
@@ -31,13 +31,13 @@ func TestSubmoduleRemoteIdentifier(t *testing.T) {
 	}{
 		{
 			submodule: models.Submodule{
-				Url: urls.HttpUrl{"example.com", 443, "repository", true},
+				Url: &urls.HttpUrl{"example.com", 443, "repository", true},
 			},
 			expected: "example.com:443/repository",
 		},
 		{
 			submodule: models.Submodule{
-				Url: urls.HttpUrl{"another-example.com", 8080, "another-repository", true},
+				Url: &urls.HttpUrl{"another-example.com", 8080, "another-repository", true},
 				Ref: "main",
 			},
 			expected: "another-example.com:8080/another-repository@main",
@@ -60,7 +60,7 @@ func TestSubmoduleIdentifier(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "   ",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "main",
 			},
 			expected: "example.com:443/repository@main>repository",
@@ -68,7 +68,7 @@ func TestSubmoduleIdentifier(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "/src/module",
-				Url:  urls.HttpUrl{"example.com", 8080, "another-repository", true},
+				Url:  &urls.HttpUrl{"example.com", 8080, "another-repository", true},
 				Ref:  "dev",
 			},
 			expected: "example.com:8080/another-repository@dev>/src/module",
@@ -76,7 +76,7 @@ func TestSubmoduleIdentifier(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "src/module",
-				Url:  urls.HttpUrl{"example.com", 8080, "another-repository", true},
+				Url:  &urls.HttpUrl{"example.com", 8080, "another-repository", true},
 				Ref:  "dev",
 			},
 			expected: "example.com:8080/another-repository@dev>src/module",
@@ -99,7 +99,7 @@ func TestSubmoduleString(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "/valid/path",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "main",
 			},
 			expected: "Submodule example.com:443/repository@main>/valid/path",
@@ -107,7 +107,7 @@ func TestSubmoduleString(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "",
-				Url:  urls.HttpUrl{"another-example.com", 8080, "another-repository", true},
+				Url:  &urls.HttpUrl{"another-example.com", 8080, "another-repository", true},
 			},
 			expected: "Submodule another-example.com:8080/another-repository>another-repository",
 		},
@@ -129,14 +129,14 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "foo",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 			},
 			valid: true,
 		},
 		{
 			submodule: models.Submodule{
 				Path: "foo",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "main",
 			},
 			valid: true,
@@ -144,7 +144,7 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "",
-				Url:  urls.HttpUrl{},
+				Url:  &urls.HttpUrl{},
 				Ref:  "main",
 			},
 			valid: false,
@@ -152,7 +152,7 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "*foo",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "main",
 			},
 			valid: false,
@@ -160,7 +160,7 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "fo*o",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "main",
 			},
 			valid: false,
@@ -168,7 +168,7 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "!foo",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "main",
 			},
 			valid: false,
@@ -176,7 +176,7 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "fo!o",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "main",
 			},
 			valid: false,
@@ -184,7 +184,7 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "/valid/path",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "invalid ref",
 			},
 			valid: false,
@@ -192,7 +192,7 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "valid/path",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 				Ref:  "valid",
 			},
 			valid: true,
@@ -200,7 +200,7 @@ func TestSubmoduleValidate(t *testing.T) {
 		{
 			submodule: models.Submodule{
 				Path: "valid/path",
-				Url:  urls.HttpUrl{"example.com", 443, "repository", true},
+				Url:  &urls.HttpUrl{"example.com", 443, "repository", true},
 			},
 			valid: true,
 		},

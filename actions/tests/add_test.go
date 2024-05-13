@@ -63,11 +63,11 @@ func TestAddSubmoduleInContext(t *testing.T) {
 		{test_env.RepoUrl, "/foo", "", []models.Submodule{}, false, false, nil, true},
 		{test_env.RepoUrl, "/../foo", "", []models.Submodule{}, false, false, nil, true},
 		{test_env.RepoUrl, "foo", test_env.RepoBranch1, []models.Submodule{}, false, false, expectedMigrationsRef, false},
-		{test_env.RepoUrl, "", "", []models.Submodule{{"example-repository", testRepoUrl, ""}}, false, false, nil, true},
-		{test_env.RepoUrl, "", "", []models.Submodule{{"example-repository", testRepoUrl, ""}}, false, true, nil, true},
-		{test_env.RepoUrl, "", test_env.RepoBranch1, []models.Submodule{{"foo", testRepoUrl, ""}}, false, false, nil, true},
-		{test_env.RepoUrl, "", test_env.RepoBranch1, []models.Submodule{{"foo", testRepoUrl, ""}}, false, true, expectedMigrationsRef, false},
-		{test_env.RepoUrl, "", test_env.RepoBranch1, []models.Submodule{{"foo", testRepoUrl, test_env.RepoBranch1}}, false, true, expectedMigrationsRef, false},
+		{test_env.RepoUrl, "", "", []models.Submodule{{"example-repository", &testRepoUrl, ""}}, false, false, nil, true},
+		{test_env.RepoUrl, "", "", []models.Submodule{{"example-repository", &testRepoUrl, ""}}, false, true, nil, true},
+		{test_env.RepoUrl, "", test_env.RepoBranch1, []models.Submodule{{"foo", &testRepoUrl, ""}}, false, false, nil, true},
+		{test_env.RepoUrl, "", test_env.RepoBranch1, []models.Submodule{{"foo", &testRepoUrl, ""}}, false, true, expectedMigrationsRef, false},
+		{test_env.RepoUrl, "", test_env.RepoBranch1, []models.Submodule{{"foo", &testRepoUrl, test_env.RepoBranch1}}, false, true, expectedMigrationsRef, false},
 	}
 
 	for index, tc := range cases {
@@ -129,7 +129,7 @@ func TestAddSubmoduleInContext(t *testing.T) {
 			if !tc.err {
 				for mindex, migration := range migrationArr {
 					if reflect.TypeOf(migration) != reflect.TypeOf(tc.expectedMigrations[mindex]) {
-						t.Fatalf("AddSubmoduleInContext() for case %d had unexpected migration at index %d: %s != %s", index+1, mindex, reflect.TypeOf(migration), reflect.TypeOf(tc.expectedMigrations[mindex]))
+						t.Fatalf("AddSubmoduleInContext() for case %d had unexpected migration at index %d: %T != %T", index+1, mindex, migration, tc.expectedMigrations[mindex])
 					}
 				}
 			}
