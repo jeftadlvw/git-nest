@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/utils"
+	"os"
 	"regexp"
 	"strings"
 )
 
+const gitExcludeDirectory = ".git/info"
 const gitExcludeFile = ".git/info/exclude"
 const gitExcludePrefix string = "# git-nest configuration start"
 const gitExcludeSuffix string = "# git-nest configuration end"
@@ -142,11 +144,28 @@ func WriteProjectConfigFiles(c models.NestContext) (WriteProjectConfigFilesRetur
 
 	// write to git_exclude if project is a git repository
 	if c.IsGitInstalled && c.IsGitRepository {
-		err := WriteSubmoduleIgnoreConfig(c.GitRepositoryRoot.SJoin(gitExcludeFile), c.Config.Submodules)
-		if err == nil {
-			r.GitExcludeWritten = true
+
+		// create gitExcludeDirectory if it does not exist
+		gitExcludeDirectoryPath := c.GitRepositoryRoot.SJoin(gitExcludeDirectory)
+		if gitExcludeDirectoryPath.IsFile() {
+			r.GitExcludeWriteError = fmt.Errorf("%s is a file", gitExcludeDirectoryPath)
 		}
-		r.GitExcludeWriteError = err
+
+		if !gitExcludeDirectoryPath.IsFile() && !gitExcludeDirectoryPath.IsDir() {
+			err = os.MkdirAll(gitExcludeDirectoryPath.String(), os.ModePerm)
+			if err != nil {
+				r.GitExcludeWriteError = fmt.Errorf("cannot create directory %s: %w", gitExcludeDirectoryPath.String(), err)
+			}
+		}
+
+		if gitExcludeDirectoryPath.IsDir() {
+			err = WriteSubmoduleIgnoreConfig(c.GitRepositoryRoot.SJoin(gitExcludeFile), c.Config.Submodules)
+			if err == nil {
+				r.GitExcludeWritten = true
+			} else {
+				r.GitExcludeWriteError = err
+			}
+		}
 	}
 
 	return r, nil
