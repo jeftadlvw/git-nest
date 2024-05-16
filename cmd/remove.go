@@ -35,6 +35,18 @@ func wrapRemoveSubmodule(cmd *cobra.Command, args []string) {
 
 func removeSubmodule(p models.Path, deleteDirectory bool, forceDelete bool) error {
 
+	// acquire lock
+	lockFile, err := internal.ErrorWrappedLockAcquiringAtProjectRootFromCwd()
+	defer func() {
+		err := internal.ErrorWrappedLockReleasing(lockFile)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+	if err != nil {
+		return err
+	}
+
 	// read context
 	context, err := internal.ErrorWrappedEvaluateContext()
 	if err != nil {
@@ -47,9 +59,9 @@ func removeSubmodule(p models.Path, deleteDirectory bool, forceDelete bool) erro
 	}
 
 	actionMigrations = append(actionMigrations, mcontext.WriteConfigFiles{Context: &context})
-	err = migrations.RunMigrations(actionMigrations...)
-	if err != nil {
-		return err
+	migrationError := migrations.RunMigrations(actionMigrations...)
+	if migrationError != nil {
+		return migrationError
 	}
 
 	return nil
