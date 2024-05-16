@@ -48,6 +48,7 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 	configStr, err := utils.ReadFileToStr(configFilePath)
 	if err == nil {
 		configFileExists = true
+	} else {
 		configStr = ""
 	}
 
