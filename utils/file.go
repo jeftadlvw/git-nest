@@ -26,5 +26,9 @@ func ReadFileToStr(path models.Path) (string, error) {
 WriteStrToFile is a wrapper for os.WriteFile.
 */
 func WriteStrToFile(path models.Path, str string) error {
+	if path.IsDir() {
+		return fmt.Errorf("%s is a directory", path.String())
+	}
+
 	return os.WriteFile(path.String(), []byte(str), 0644)
 }
