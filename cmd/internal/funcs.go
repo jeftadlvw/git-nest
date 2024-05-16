@@ -5,6 +5,7 @@ import (
 	"github.com/jeftadlvw/git-nest/internal"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 /*
@@ -37,6 +38,23 @@ func RunWrapper(run func(cmd *cobra.Command, args []string), validateArgCount ..
 }
 
 /*
+GetProjectRootFromCwd returns the project root directory, starting from the current directory.
+*/
+func GetProjectRootFromCwd() (models.Path, error) {
+	cwdStr, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("could not get current working directory: %w", err)
+	}
+	cwd := models.Path(cwdStr)
+	projectRoot, err := internal.FindProjectRoot(cwd)
+	if err != nil {
+		projectRoot = cwd
+	}
+
+	return projectRoot, nil
+}
+
+/*
 ErrorWrappedEvaluateContext is a wrapper for the cmd package to remove repetitive boilerplate code.
 It returns the evaluated context or a preformatted error.
 */
@@ -47,4 +65,36 @@ func ErrorWrappedEvaluateContext() (models.NestContext, error) {
 	}
 
 	return context, nil
+}
+
+/*
+ErrorWrappedLockAcquiringAtProjectRootFromCwd is a wrapper for internal.AcquireLockFile to remove boilerplate code.
+It returns an error if the lockfile at the project root starting from the current working directory
+could not be acquired.
+*/
+func ErrorWrappedLockAcquiringAtProjectRootFromCwd() (*os.File, error) {
+	projectRoot, err := GetProjectRootFromCwd()
+	if err != nil {
+		return nil, fmt.Errorf("could not get project root: %w", err)
+	}
+
+	lockFile, err := internal.AcquireLockFile(projectRoot)
+	if err != nil {
+		return nil, fmt.Errorf("error while acquiring lock: %w", err)
+	}
+
+	return lockFile, nil
+}
+
+/*
+ErrorWrappedLockReleasing is a wrapper for internal.ReleaseLockFile to remove boilerplate code.
+It returns an error if the lockfile could not be released.
+*/
+func ErrorWrappedLockReleasing(f *os.File) error {
+	err := internal.ReleaseLockFile(f)
+	if err != nil {
+		return fmt.Errorf("could not release lock: %w", err)
+	}
+
+	return nil
 }
