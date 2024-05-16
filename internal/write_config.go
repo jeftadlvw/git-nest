@@ -14,6 +14,13 @@ const gitExcludeSuffix string = "# git-nest configuration end"
 const gitExcludeInfo string = `# This part influences how git handles nested modules using git-nest.
 # Do not touch except you know what you are doing!`
 
+type WriteProjectConfigFilesReturn struct {
+	ConfigWritten        bool
+	GitExcludeWritten    bool
+	ConfigWriteError     error
+	GitExcludeWriteError error
+}
+
 /*
 FmtSubmodulesGitIgnore returns a string that formats a slice of models.Submodule into a string that can be used by git to ignore the submodules' paths.
 */
@@ -76,7 +83,7 @@ func WriteNestConfig(p models.Path, modules []models.Submodule) error {
 		}
 		existingConfig = localExistingConfig
 
-		// append '[[submodule]]' to in-memory config for regex to find existing config
+		// append '[[submodule]]' to in-memory config for regex to find existing config;
 		// even if that header already exists, it'll be removed anyway by later processing
 		existingConfig = existingConfig + "[[submodule]]"
 	}
@@ -108,26 +115,39 @@ func WriteNestConfig(p models.Path, modules []models.Submodule) error {
 WriteProjectConfigFiles is a total wrapper function for internal.WriteSubmoduleIgnoreConfig and internal.WriteNestConfig,
 calling both functions based on the passed models.NestContext.
 */
-func WriteProjectConfigFiles(c models.NestContext) (bool, bool, error, error) {
+func WriteProjectConfigFiles(c models.NestContext) (WriteProjectConfigFilesReturn, error) {
 
-	var gitExcludeWritten, configWritten bool
-	var gitExcludeWriteError, configWriteError error
+	r := WriteProjectConfigFilesReturn{}
+
+	// check if configuration file has been updated since initial
+	// context evaluation
+	if c.ConfigFile.IsFile() {
+		localChecksum, err := utils.CalculateChecksumF(c.ConfigFile)
+		if err != nil {
+			return r, fmt.Errorf("internal error: could not calculate checksum: %w", err)
+		}
+
+		if c.Checksums.ConfigurationFile != localChecksum {
+			return r, fmt.Errorf("configuration file checksum mismatch:\nThe configuration file has been changed since the initial start of the program.")
+		}
+	}
+
+	// write nest config first, as
+	// write to git-nest configuration file
+	err := WriteNestConfig(c.ConfigFile, c.Config.Submodules)
+	if err == nil {
+		r.ConfigWritten = true
+	}
+	r.ConfigWriteError = err
 
 	// write to git_exclude if project is a git repository
 	if c.IsGitInstalled && c.IsGitRepository {
 		err := WriteSubmoduleIgnoreConfig(c.GitRepositoryRoot.SJoin(gitExcludeFile), c.Config.Submodules)
 		if err == nil {
-			gitExcludeWritten = true
+			r.GitExcludeWritten = true
 		}
-		gitExcludeWriteError = err
+		r.GitExcludeWriteError = err
 	}
 
-	// write to git-nest configuration file
-	err := WriteNestConfig(c.ConfigFile, c.Config.Submodules)
-	if err == nil {
-		configWritten = true
-	}
-	configWriteError = err
-
-	return gitExcludeWritten, configWritten, gitExcludeWriteError, configWriteError
+	return r, nil
 }
