@@ -66,13 +66,17 @@ func TestCalculateChecksumF(t *testing.T) {
 			}
 
 			expectedChecksum := fmt.Sprintf("%x", h.Sum(nil))
-			checksum, err := utils.CalculateChecksumF(tempFile)
+			checksumString := utils.CalculateChecksumS(tc.input)
+			checksumFile, err := utils.CalculateChecksumF(tempFile)
 			if err != nil {
-				t.Fatalf("error calculating checksum: %s", err)
+				t.Fatalf("error calculating checksum for file: %s", err)
 			}
 
-			if checksum != expectedChecksum {
-				t.Fatalf("checksums do not match: expected: %s, got: %s", expectedChecksum, checksum)
+			if checksumFile != expectedChecksum {
+				t.Fatalf("checksums do not match: expected: %s, got: %s", expectedChecksum, checksumFile)
+			}
+			if checksumFile != checksumString {
+				t.Fatalf("unequal checksums for file and string: %s != %s", checksumFile, checksumString)
 			}
 		})
 	}
