@@ -48,6 +48,7 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 	configStr, err := utils.ReadFileToStr(configFilePath)
 	if err == nil {
 		configFileExists = true
+		configStr = ""
 	}
 
 	// populate configuration struct if a configuration file exists,
@@ -77,6 +78,9 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 		}
 	}
 
+	// calculate checksum of configuration file content
+	configFileChecksum := utils.CalculateChecksumS(configStr)
+
 	nestContext.WorkingDirectory = p
 	nestContext.ProjectRoot = projectRoot
 	nestContext.ConfigFileExists = configFileExists
@@ -85,6 +89,7 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 	nestContext.IsGitInstalled = IsGitInstalled
 	nestContext.IsGitRepository = isGitProject
 	nestContext.GitRepositoryRoot = gitRoot
+	nestContext.Checksums.ConfigurationFile = configFileChecksum
 
 	return nestContext, nil
 }
