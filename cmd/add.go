@@ -63,21 +63,35 @@ func argsToParamsAddSubmodule(args []string) (urls.HttpUrl, string, models.Path,
 
 func addSubmodule(url urls.HttpUrl, ref string, cloneDir models.Path) error {
 
+	// acquire lock
+	lockFile, err := internal.ErrorWrappedLockAcquiringAtProjectRootFromCwd()
+	defer func() {
+		err := internal.ErrorWrappedLockReleasing(lockFile)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+	if err != nil {
+		return err
+	}
+
 	// read context
 	context, err := internal.ErrorWrappedEvaluateContext()
 	if err != nil {
 		return err
 	}
 
+	// run subcommand action
 	actionMigrations, err := actions.AddSubmoduleInContext(&context, url, ref, cloneDir)
 	if err != nil {
 		return err
 	}
 
+	// run migrations
 	actionMigrations = append(actionMigrations, mcontext.WriteConfigFiles{Context: &context})
-	err = migrations.RunMigrations(actionMigrations...)
-	if err != nil {
-		return err
+	migrationError := migrations.RunMigrations(actionMigrations...)
+	if migrationError != nil {
+		return migrationError
 	}
 
 	return nil

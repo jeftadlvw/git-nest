@@ -23,6 +23,7 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 		gitRoot          models.Path
 		IsGitInstalled   bool
 		isGitProject     bool
+		err              error
 	)
 
 	nestContext := models.NestContext{}
@@ -32,7 +33,7 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 	}
 
 	// evaluate project root
-	projectRoot, err := FindProjectRoot(p)
+	projectRoot, err = FindProjectRoot(p)
 	if err != nil {
 		projectRoot = p
 	}
@@ -48,6 +49,8 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 	configStr, err := utils.ReadFileToStr(configFilePath)
 	if err == nil {
 		configFileExists = true
+	} else {
+		configStr = ""
 	}
 
 	// populate configuration struct if a configuration file exists,
@@ -77,6 +80,9 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 		}
 	}
 
+	// calculate checksum of configuration file content
+	configFileChecksum := utils.CalculateChecksumS(configStr)
+
 	nestContext.WorkingDirectory = p
 	nestContext.ProjectRoot = projectRoot
 	nestContext.ConfigFileExists = configFileExists
@@ -85,6 +91,7 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 	nestContext.IsGitInstalled = IsGitInstalled
 	nestContext.IsGitRepository = isGitProject
 	nestContext.GitRepositoryRoot = gitRoot
+	nestContext.Checksums.ConfigurationFile = configFileChecksum
 
 	return nestContext, nil
 }

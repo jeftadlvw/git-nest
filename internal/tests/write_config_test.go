@@ -220,21 +220,25 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 
 		modulesExist := len(context.Config.Submodules) != 0
 
-		gitExcludeWritten, configWritten, gitExcludeWriteErr, configWriteErr := internal.WriteProjectConfigFiles(context)
+		r, err := internal.WriteProjectConfigFiles(context)
 
-		if gitExcludeWriteErr != nil {
-			t.Fatalf("writing to git exclude failed: %s", gitExcludeWriteErr)
+		if err != nil {
+			t.Fatalf("failed to write project config files: %s", err)
 		}
 
-		if configWriteErr != nil {
-			t.Fatalf("writing to config file failed: %s", configWriteErr)
+		if r.GitExcludeWriteError != nil {
+			t.Fatalf("writing to git exclude failed: %s", r.GitExcludeWriteError)
 		}
 
-		if !gitExcludeWritten {
+		if r.ConfigWriteError != nil {
+			t.Fatalf("writing to config file failed: %s", r.ConfigWriteError)
+		}
+
+		if !r.GitExcludeWritten {
 			t.Fatalf("should've written to git exclude")
 		}
 
-		if !configWritten {
+		if !r.ConfigWritten {
 			t.Fatalf("should've written to configuration file")
 		}
 
@@ -285,21 +289,25 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 
 		modulesExist := len(context.Config.Submodules) != 0
 
-		gitExcludeWritten, configWritten, gitExcludeWriteErr, configWriteErr := internal.WriteProjectConfigFiles(context)
+		r, err := internal.WriteProjectConfigFiles(context)
 
-		if gitExcludeWriteErr != nil {
-			t.Fatalf("writing to git exclude failed, and should've never happened: %s", gitExcludeWriteErr)
+		if err != nil {
+			t.Fatalf("failed to write project config files: %s", err)
 		}
 
-		if configWriteErr != nil {
-			t.Fatalf("writing to config file failed: %s", configWriteErr)
+		if r.GitExcludeWriteError != nil {
+			t.Fatalf("writing to git exclude failed, and should've never happened: %s", r.GitExcludeWriteError)
 		}
 
-		if gitExcludeWritten {
-			t.Fatalf("should not have written to git exclude")
+		if r.ConfigWriteError != nil {
+			t.Fatalf("writing to config file failed: %s", r.ConfigWriteError)
 		}
 
-		if !configWritten {
+		if r.GitExcludeWritten {
+			t.Fatalf("should've written to git exclude")
+		}
+
+		if !r.ConfigWritten {
 			t.Fatalf("should've written to configuration file")
 		}
 

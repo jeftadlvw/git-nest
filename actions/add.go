@@ -9,7 +9,6 @@ import (
 	"github.com/jeftadlvw/git-nest/migrations/git"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/models/urls"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -37,7 +36,6 @@ func AddSubmoduleInContext(context *models.NestContext, url urls.HttpUrl, ref st
 	// if cloneDir is empty, set it to repository name
 	// if cloneDir has trailing separator, append repository name
 	if strings.HasSuffix(string(cloneDir), string(filepath.Separator)) {
-		fmt.Println("has suffix")
 		cloneDir = cloneDir.SJoin(repositoryName)
 	} else if cloneDir.Empty() {
 		cloneDir = models.Path(repositoryName)
@@ -56,18 +54,11 @@ func AddSubmoduleInContext(context *models.NestContext, url urls.HttpUrl, ref st
 	// join project root and absolute path, check if it's not an existing file and create that directory
 	absolutePath = context.ProjectRoot.Join(relativeToRoot)
 
-	if !absolutePath.Exists() {
-		err = os.MkdirAll(absolutePath.String(), os.ModePerm)
-		if err != nil {
-			return nil, fmt.Errorf("internal error: could not create directory %s: %w", absolutePath, err)
-		}
-	} else {
-		if absolutePath.IsFile() {
-			return nil, fmt.Errorf("validation error: %s is a file", cloneDir)
-		}
-		if absolutePath.BContains("*") {
-			return nil, fmt.Errorf("validation error: %s is not empty", cloneDir)
-		}
+	if absolutePath.IsFile() {
+		return nil, fmt.Errorf("validation error: %s is a file", cloneDir)
+	}
+	if absolutePath.BContains("*") {
+		return nil, fmt.Errorf("validation error: directory %s is not empty", cloneDir)
 	}
 
 	newSubmodule := models.Submodule{

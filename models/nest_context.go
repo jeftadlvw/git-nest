@@ -43,6 +43,11 @@ type NestContext struct {
 	Config NestConfig
 
 	/*
+		Checksums contains checksums of every configuration file's contents.
+	*/
+	Checksums Checksums
+
+	/*
 		IsGitInstalled defines whether git is installed in the current environment.
 	*/
 	IsGitInstalled bool

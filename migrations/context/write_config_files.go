@@ -11,13 +11,13 @@ type WriteConfigFiles struct {
 }
 
 func (m WriteConfigFiles) Migrate() error {
-	var err error
-
-	_, _, err1, err2 := internal.WriteProjectConfigFiles(*m.Context)
-	if err1 != nil {
-		err = err1
-	} else if err2 != nil {
-		err = err2
+	r, err := internal.WriteProjectConfigFiles(*m.Context)
+	if err == nil {
+		if r.ConfigWriteError != nil {
+			err = r.ConfigWriteError
+		} else if r.GitExcludeWriteError != nil {
+			err = r.GitExcludeWriteError
+		}
 	}
 
 	if err != nil {
