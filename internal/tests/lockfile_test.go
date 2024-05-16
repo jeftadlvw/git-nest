@@ -13,52 +13,38 @@ import (
 func TestAcquireLockFile(t *testing.T) {
 
 	cases := []struct {
-		createFile              bool
-		createDir               bool
-		isGitRepositoryOverride bool
-		expectedFile            string
-		success                 bool
-		err                     bool
+		createFile   bool
+		createDir    bool
+		expectedFile string
+		err          bool
 	}{
-		{false, false, false, constants.LockFileName, true, false},
-		{false, false, true, constants.LockFileNameGitRepo, true, false},
-		{true, false, false, constants.LockFileName, false, false},
-		{true, false, true, constants.LockFileNameGitRepo, false, false},
-		{true, true, false, constants.LockFileName, false, true},
-		{true, true, true, constants.LockFileNameGitRepo, false, true},
+		{false, false, constants.LockFileName, false},
+		{true, false, constants.LockFileName, true},
+		{true, true, constants.LockFileName, true},
 	}
 
 	for index, tc := range cases {
 		t.Run(fmt.Sprintf("TestAcquireLockFile-%d", index+1), func(t *testing.T) {
+			var err error
 			tempDir := models.Path(t.TempDir())
-			context, err := internal.CreateContext(tempDir)
-			if err != nil {
-				t.Fatalf("could not create temporary context: %s", err)
-			}
-
-			context.IsGitRepository = tc.isGitRepositoryOverride
-			if tc.isGitRepositoryOverride {
-				err = os.MkdirAll(context.ProjectRoot.String()+"/.git", os.ModePerm)
-				if err != nil {
-					t.Fatalf("could not create mock .git directory: %s", err)
-				}
-			}
 
 			if tc.createDir {
-				err = os.MkdirAll(context.ProjectRoot.String()+"/"+tc.expectedFile, os.ModePerm)
+				err = os.MkdirAll(tempDir.String()+"/"+tc.expectedFile, os.ModePerm)
 				if err != nil {
 					t.Fatalf("could not create mock directory: %s", err)
 				}
 			}
 
 			if !tc.createDir && tc.createFile {
-				err = utils.WriteStrToFile(context.ProjectRoot.SJoin(tc.expectedFile), "")
+				err = utils.WriteStrToFile(tempDir.SJoin(tc.expectedFile), "")
 				if err != nil {
 					t.Fatalf("could not create mock lock file: %s", err)
 				}
 			}
 
-			success, err := internal.AcquireLockFile(context)
+			lockFile, err := internal.AcquireLockFile(tempDir)
+			defer internal.ReleaseLockFile(lockFile)
+
 			// test for errors
 			if tc.err && err == nil {
 				t.Fatalf("no error, but expected one")
@@ -67,11 +53,17 @@ func TestAcquireLockFile(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err)
 			}
 
-			if tc.success && !success {
-				t.Fatalf("expected success, but wasn't")
-			}
-			if !tc.success && success {
-				t.Fatalf("expected failure, but wasn't")
+			if !tc.err {
+				expectedFile := tempDir.SJoin(tc.expectedFile)
+				if !expectedFile.IsFile() {
+					t.Fatalf("lockfile was not created")
+				}
+
+				lockFileTest, err := internal.AcquireLockFile(tempDir)
+				if err == nil {
+					t.Fatalf("second acquiring was successful")
+					defer internal.ReleaseLockFile(lockFileTest)
+				}
 			}
 		})
 	}
@@ -79,59 +71,23 @@ func TestAcquireLockFile(t *testing.T) {
 
 func TestReleaseLockFile(t *testing.T) {
 
-	cases := []struct {
-		createFile              bool
-		createDir               bool
-		isGitRepositoryOverride bool
-		expectedFile            string
-		err                     bool
-	}{
-		{false, false, false, constants.LockFileName, false},
-		{false, false, true, constants.LockFileNameGitRepo, false},
-		{true, false, false, constants.LockFileName, false},
-		{true, false, true, constants.LockFileNameGitRepo, false},
-		{true, true, false, constants.LockFileName, true},
-		{true, true, true, constants.LockFileNameGitRepo, true},
+	tempDir := models.Path(t.TempDir())
+
+	lockFile, err := internal.AcquireLockFile(tempDir)
+	if err != nil {
+		t.Fatalf("acquiring lockfile failed: %s", err)
 	}
 
-	for index, tc := range cases {
-		t.Run(fmt.Sprintf("ReleaseLockFile-%d", index+1), func(t *testing.T) {
-			tempDir := models.Path(t.TempDir())
-			context, err := internal.CreateContext(tempDir)
-			if err != nil {
-				t.Fatalf("could not create temporary context: %s", err)
-			}
-
-			context.IsGitRepository = tc.isGitRepositoryOverride
-			if tc.isGitRepositoryOverride {
-				err = os.MkdirAll(context.ProjectRoot.String()+"/.git", os.ModePerm)
-				if err != nil {
-					t.Fatalf("could not create mock .git directory: %s", err)
-				}
-			}
-
-			if tc.createDir {
-				err = os.MkdirAll(context.ProjectRoot.String()+"/"+tc.expectedFile, os.ModePerm)
-				if err != nil {
-					t.Fatalf("could not create mock directory: %s", err)
-				}
-			}
-
-			if !tc.createDir && tc.createFile {
-				err = utils.WriteStrToFile(context.ProjectRoot.SJoin(tc.expectedFile), "")
-				if err != nil {
-					t.Fatalf("could not create mock lock file: %s", err)
-				}
-			}
-
-			err = internal.ReleaseLockFile(context)
-			// test for errors
-			if tc.err && err == nil {
-				t.Fatalf("no error, but expected one")
-			}
-			if !tc.err && err != nil {
-				t.Fatalf("unexpected error: %s", err)
-			}
-		})
+	err = internal.ReleaseLockFile(lockFile)
+	// test for errors
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
 	}
+
+	errSecondRelease := internal.ReleaseLockFile(lockFile)
+	// test for errors
+	if errSecondRelease == nil {
+		t.Fatalf("releasing a lockfile a second time should cause error")
+	}
+
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/jeftadlvw/git-nest/internal/constants"
 	"github.com/jeftadlvw/git-nest/models"
-	"github.com/jeftadlvw/git-nest/utils"
 	"os"
 )
 
@@ -13,50 +12,42 @@ import (
 AcquireLockFile tries to acquire a context-specific lockfile.
 It returns if the lockfile was acquired successfully.
 */
-func AcquireLockFile(c models.NestContext) (bool, error) {
-	lockFilePath := getLockFilePath(c.IsGitRepository, c.ProjectRoot)
+func AcquireLockFile(p models.Path) (*os.File, error) {
+	lockFilePath := p.SJoin(constants.LockFileName)
 
 	if lockFilePath.IsDir() {
-		return false, errors.New("lock file is directory")
+		return nil, errors.New("lock file is directory")
 	}
 
+	infoText := "----\nAnother git-nest process might already be running in this project."
+
+	// if file exist, leave it alone and act like it's locked
 	if lockFilePath.IsFile() {
-		return false, nil
+		return nil, fmt.Errorf("file is locked;\n%s", infoText)
 	}
 
-	err := utils.WriteStrToFile(lockFilePath, constants.LockFileContents)
+	// open a new file and prevent creation if it already exists
+	file, err := os.OpenFile(lockFilePath.String(), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
 	if err != nil {
-		return false, fmt.Errorf("could not write lockfile: %w", err)
+		return nil, fmt.Errorf("error creating lock file:\n%w;\n%s", err, infoText)
 	}
 
-	return true, nil
+	return file, nil
 }
 
 /*
 ReleaseLockFile releases the context-specific lockfile.
 */
-func ReleaseLockFile(c models.NestContext) error {
-	lockFilePath := getLockFilePath(c.IsGitRepository, c.ProjectRoot)
-
-	if lockFilePath.IsDir() {
-		return errors.New("lock file is directory")
+func ReleaseLockFile(f *os.File) error {
+	err := f.Close()
+	if err != nil {
+		return fmt.Errorf("error closing lock file: %w", err)
 	}
 
-	if lockFilePath.IsFile() {
-		err := os.Remove(lockFilePath.String())
-		if err != nil {
-			return fmt.Errorf("could not remove lock file: %w", err)
-		}
+	err = os.Remove(f.Name())
+	if err != nil {
+		return fmt.Errorf("error removing lock file: %w", err)
 	}
 
 	return nil
-
-}
-
-func getLockFilePath(isGitRepository bool, projectRoot models.Path) models.Path {
-	if isGitRepository {
-		return projectRoot.SJoin(constants.LockFileNameGitRepo)
-	}
-
-	return projectRoot.SJoin(constants.LockFileName)
 }
