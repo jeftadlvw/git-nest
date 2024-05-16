@@ -23,6 +23,7 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 		gitRoot          models.Path
 		IsGitInstalled   bool
 		isGitProject     bool
+		err              error
 	)
 
 	nestContext := models.NestContext{}
@@ -32,7 +33,7 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 	}
 
 	// evaluate project root
-	projectRoot, err := FindProjectRoot(p)
+	projectRoot, err = FindProjectRoot(p)
 	if err != nil {
 		projectRoot = p
 	}

@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"fmt"
 	"github.com/jeftadlvw/git-nest/internal"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/models/urls"
@@ -107,8 +106,6 @@ func TestSubmoduleToTomlConfig(t *testing.T) {
 	if output := internal.SubmoduleToTomlConfig(submodule, indent); output != expectedOutput {
 		t.Fatalf("\nExpected:\n>%s<\n\nActual:\n>%s<", expectedOutput, output)
 	}
-
-	fmt.Println("2------")
 
 	// windows path style
 	submodule = models.Submodule{"example\\path", &urls.HttpUrl{"example.com", 443, "", true}, "example-ref"}
