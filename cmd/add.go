@@ -14,51 +14,49 @@ import (
 
 func createAddCmd() *cobra.Command {
 	var addCmd = &cobra.Command{
-		Use:   "add url [ref] [location]",
+		Use:   "add [url]",
 		Short: "Add and clone a remote submodule into this project",
-		Run:   internal.RunWrapper(wrapAddSubmodule, internal.ArgMinN(1), internal.ArgMaxN(3)),
+		Run:   internal.RunWrapper(wrapAddSubmodule, internal.ArgExactN(1)),
 	}
+
+	addCmd.Flags().StringP("ref", "r", "", "repository reference")
+	addCmd.Flags().StringP("path", "p", "", "custom module path to clone into")
 
 	return addCmd
 }
 
 func wrapAddSubmodule(cmd *cobra.Command, args []string) {
-	url, ref, cloneDir, err := argsToParamsAddSubmodule(args)
-	if err != nil {
-		fmt.Printf("fatal: argument validation: %s\n", err)
-		return
-	}
 
-	err = addSubmodule(url, ref, cloneDir)
-	if err != nil {
-		fmt.Printf("error: %s\n", err)
-	}
-}
-
-func argsToParamsAddSubmodule(args []string) (urls.HttpUrl, string, models.Path, error) {
 	var (
 		url      urls.HttpUrl
 		ref      string
 		cloneDir models.Path
 	)
 
-	var argLen = len(args)
+	// validate url
+	u, err := urls.HttpUrlFromString(args[0])
+	if err != nil {
+		fmt.Printf("error: invalid url\n")
+		return
+	}
+	url = u
 
-	if argLen >= 1 {
-		u, err := urls.HttpUrlFromString(args[0])
-		if err != nil {
-			return urls.HttpUrl{}, "", "", fmt.Errorf("invalid url")
-		}
-		url = u
-	}
-	if argLen >= 2 {
-		ref = strings.TrimSpace(args[1])
-	}
-	if argLen >= 3 {
-		cloneDir = models.Path(strings.TrimSpace(args[2]))
+	refRaw, _ := cmd.Flags().GetString("ref")
+	ref = strings.TrimSpace(refRaw)
+	if ref == "" && ref != refRaw {
+		fmt.Printf("error: no value defined for flag 'ref' \n")
 	}
 
-	return url, ref, cloneDir, nil
+	cloneDirRaw, _ := cmd.Flags().GetString("path")
+	cloneDir = models.Path(strings.TrimSpace(cloneDirRaw))
+	if cloneDir.Empty() && cloneDir.String() != cloneDirRaw {
+		fmt.Printf("error: no value defined for flag 'path' \n")
+	}
+
+	err = addSubmodule(url, ref, cloneDir)
+	if err != nil {
+		fmt.Printf("error: %s\n", err)
+	}
 }
 
 func addSubmodule(url urls.HttpUrl, ref string, cloneDir models.Path) error {
