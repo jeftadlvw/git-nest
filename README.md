@@ -1,6 +1,6 @@
 # git-nest
 
-**git-nest** is a _git_ command line extension for loosely nesting external repositories into your repository. It's an alternative to the default `git-submodule` that does add submodule information to the index, but just works from a configuration file.
+**git-nest** is a _git_ command line extension for loosely nesting external repositories into your repository. It's an alternative to the default `git-submodule` that doesn't add submodule information to the index, but just works from a configuration file.
 
 > [!IMPORTANT]
 > This project is in early development. Source code may be unstable and documentation inaccurate. Proceed and use with caution. Feel free to open an issue!
