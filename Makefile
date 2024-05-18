@@ -51,6 +51,15 @@ test:
 git-test: build
 	@PATH="$$PATH:$(ROOT_DIR)/build" git nest
 
+test-env:
+	@docker build -t git-nest/test-env _docker/test_env
+	@CONTAINER_NAME=git-nest_testenv; \
+		if [[ "$$(docker ps -aqf name=$$CONTAINER_NAME)" ]]; then \
+			docker start -ai $$CONTAINER_NAME; \
+		else \
+			docker run -it --name $$CONTAINER_NAME -v ./:/app/src:ro git-nest/test-env; \
+		fi
+
 debug:
 	@echo "OS:\t\t\t$(DETECTED_OS)"
 	@echo "ROOT_DIR:\t\t$(ROOT_DIR)"

@@ -89,15 +89,40 @@ devbox shell
 - https://www.jetpack.io/devbox/docs/
 
 ### Docker
-> ToDo
+> ToDo<br>
+> Using a [testing environment](#temporary-testing-environment) might be an alternative until we put the whole development environment into a docker image.
 
 ### Bare bones
-
 In order to develop *git-nest* without a wrapped shell environment you are required to have some dependencies installed on your system. Some links and documentation are provided.
 
 * supported version of the Go toolchain (see [Supported go versions](#supported-go-versions))
 * git
 * GNU make
+
+### Temporary testing environment
+We provide a Docker image that sets up an isolated testing environment to securely test modified code in a shell.
+
+To build the image, enter
+```shell
+docker build -t git-nest/test-env _docker/test_env
+```
+
+Run it with
+```shell
+docker run -it --name git-nest_testenv -v ./:/app/src:ro git-nest/test-env
+```
+
+In case you want to continue testing
+```shell
+docker start -ai git-nest_testenv
+```
+
+There also is a makefile target that combines these two commands. It will reuse a pre-existing container.
+```shell
+make test-env
+```
+
+This opens a tmux session with two terminals. On the left side you see the output of the file watcher that automatically builds your source code on file changes. On the right side is your regular bash terminal with which you can interact and test _git-nest_ with. There is a command called `prune`, that completely wipes the test-env directory.
 
 ### Supported Go versions
 As of current development, `go-1.22` is required to build the source code.
@@ -106,6 +131,7 @@ As of current development, `go-1.22` is required to build the source code.
 - `build` (default): build the project
 - `git-test`: test git integration
 - `debug`: echo project root directory and other Makefile variables
+- `test-env`: build and spin up a temporary testing environment
 
 ## Roadmap
 We are working on it. We have many ideas and much room for improvements. We'll structure and prioritize our internal list before releasing it to the public.
