@@ -33,7 +33,14 @@ if [ -r "$SRC_DIR" ] && [ -w "$SRC_DIR" ]; then
 fi
 
 function watch_and_build {
-    BUILD_CMD="PWD=$(pwd) && cd $1 && go test $1/.../tests && go build -o $2/git-nest"
+    # construct build command
+    BUILD_CMD="PWD=$(pwd) && cd $1"
+
+    if [ -z "$DISABLE_TESTS" ]; then
+        BUILD_CMD="$BUILD_CMD && go test ./.../tests"
+    fi
+
+    BUILD_CMD="$BUILD_CMD && go build -o $2/git-nest -buildvcs=false && cd $PWD"
 
     echo "Watching directory: $1"
     echo "Output directory: $2"
@@ -63,6 +70,7 @@ tmux new-session -d -s $SESSION_NAME -n "test environment"
 tmux set-environment -t $SESSION_NAME -g BIN_DIR $BIN_DIR
 tmux set-environment -t $SESSION_NAME -g SRC_DIR $SRC_DIR
 tmux set-environment -t $SESSION_NAME -g TEST_ENV_DIR $TEST_ENV_DIR
+tmux set-environment -t $SESSION_NAME -g DISABLE_TESTS $TEST_ENV_DIR
 
 # allow mouse input
 tmux set -g mouse
