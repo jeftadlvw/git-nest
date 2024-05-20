@@ -52,7 +52,7 @@ func TestCloneGitRepository(t *testing.T) {
 				clonePath = tempDir
 			}
 
-			err := utils.CloneGitRepository(tc.url, clonePath, tc.cloneDirName)
+			err := utils.CloneGitRepository(tc.url, clonePath, tc.cloneDirName, nil)
 			if tc.err && err == nil {
 				t.Fatalf("no error, but expected one")
 			}
@@ -217,7 +217,6 @@ func TestGetGitRemoteUrl(t *testing.T) {
 				testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{Origin: tc.cloneTempRepo, CloneDir: "temp"})
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
-					return
 				}
 				defer testEnv.Destroy()
 
@@ -227,13 +226,11 @@ func TestGetGitRemoteUrl(t *testing.T) {
 			remoteUrl, err := utils.GetGitRemoteUrl(repoDir)
 			if tc.err && err == nil {
 				t.Fatalf("no error, but expected one")
-				return
 			}
 			if !tc.err && err != nil {
 				t.Fatalf("unexpected error: %s", err)
-				return
 			}
-			if remoteUrl != tc.expected {
+			if !tc.err && remoteUrl != tc.expected {
 				t.Fatalf("unexpected remote: >%s<, expected >%s<,", remoteUrl, tc.expected)
 			}
 		})
@@ -274,7 +271,6 @@ func TestGetGitFetchHead(t *testing.T) {
 				testEnv, err := test_env.CreateTestEnvironment(envSettings)
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
-					return
 				}
 				defer testEnv.Destroy()
 
@@ -284,11 +280,9 @@ func TestGetGitFetchHead(t *testing.T) {
 			headRef, headRefAbbrev, err := utils.GetGitFetchHead(repoDir)
 			if tc.err && err == nil {
 				t.Fatalf("no error, but expected one")
-				return
 			}
 			if !tc.err && err != nil {
 				t.Fatalf("unexpected error: %s", err)
-				return
 			}
 			if headRef != tc.expectedRef {
 				t.Fatalf("unexpected ref: >%s<, expected >%s<,", headRef, tc.expectedRef)
@@ -331,7 +325,6 @@ func TestGetGitHasUntrackedChanges(t *testing.T) {
 				testEnv, err := test_env.CreateTestEnvironment(envSettings)
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
-					return
 				}
 				defer testEnv.Destroy()
 				repoDir = testEnv.Dir.SJoin("temp")
@@ -340,20 +333,17 @@ func TestGetGitHasUntrackedChanges(t *testing.T) {
 					err = utils.WriteStrToFile(repoDir.SJoin(testFileName), "")
 					if err != nil {
 						t.Fatalf("error writing test file: %s", err)
-						return
 					}
 
 					if tc.commitFile {
 						out, err := utils.RunCommandCombinedOutput(repoDir, "git", "add", testFileName)
 						if err != nil {
 							t.Fatalf("error git-adding test file: %s; %s", err, out)
-							return
 						}
 
 						out, err = utils.RunCommandCombinedOutput(repoDir, "git", "commit", "-m", "\"added test.txt\"")
 						if err != nil {
 							t.Fatalf("error git-commiting test file: %s; %s", err, out)
-							return
 						}
 					}
 				}
@@ -362,11 +352,9 @@ func TestGetGitHasUntrackedChanges(t *testing.T) {
 			hasUntrackedChanges, err := utils.GetGitHasUntrackedChanges(repoDir)
 			if tc.err && err == nil {
 				t.Fatalf("no error, but expected one")
-				return
 			}
 			if !tc.err && err != nil {
 				t.Fatalf("unexpected error: %s", err)
-				return
 			}
 			if hasUntrackedChanges != tc.expected {
 				t.Fatalf("GetGitHasUntrackedChanges() returned %t (should be %t)", hasUntrackedChanges, tc.expected)
@@ -406,7 +394,6 @@ func TestGetGitHasUnpublishedChanges(t *testing.T) {
 				testEnv, err := test_env.CreateTestEnvironment(envSettings)
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
-					return
 				}
 				defer testEnv.Destroy()
 				repoDir = testEnv.Dir.SJoin("temp")
@@ -415,20 +402,17 @@ func TestGetGitHasUnpublishedChanges(t *testing.T) {
 					err = utils.WriteStrToFile(repoDir.SJoin(testFileName), "")
 					if err != nil {
 						t.Fatalf("error writing test file: %s", err)
-						return
 					}
 
 					if tc.commitFile {
 						out, err := utils.RunCommandCombinedOutput(repoDir, "git", "add", testFileName)
 						if err != nil {
 							t.Fatalf("error git-adding test file: %s; %s", err, out)
-							return
 						}
 
 						out, err = utils.RunCommandCombinedOutput(repoDir, "git", "commit", "-m", "\"added test.txt\"")
 						if err != nil {
 							t.Fatalf("error git-commiting test file: %s; %s", err, out)
-							return
 						}
 					}
 				}
@@ -437,11 +421,9 @@ func TestGetGitHasUnpublishedChanges(t *testing.T) {
 			hasUnpublishedChanges, err := utils.GetGitHasUnpublishedChanges(repoDir)
 			if tc.err && err == nil {
 				t.Fatalf("no error, but expected one")
-				return
 			}
 			if !tc.err && err != nil {
 				t.Fatalf("unexpected error: %s", err)
-				return
 			}
 			if hasUnpublishedChanges != tc.expected {
 				t.Fatalf("returned %t, but should be %t", hasUnpublishedChanges, tc.expected)

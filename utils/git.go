@@ -12,7 +12,7 @@ import (
 /*
 CloneGitRepository clones a remote git repository.
 */
-func CloneGitRepository(url string, p models.Path, cloneDirName string) error {
+func CloneGitRepository(url string, p models.Path, cloneDirName string, liveOutput func(string)) error {
 	url = strings.TrimSpace(url)
 	if url == "" {
 		return fmt.Errorf("git repository url is empty")
@@ -33,7 +33,18 @@ func CloneGitRepository(url string, p models.Path, cloneDirName string) error {
 		commandArgsArr = append(commandArgsArr, cloneDirName)
 	}
 
-	output, err := RunCommandCombinedOutput(p, "git", commandArgsArr...)
+	outputBuilder := strings.Builder{}
+	liveOutputFunc := func(line string) {
+		outputBuilder.WriteString(line + "\n")
+
+		if liveOutput != nil {
+			liveOutput(line)
+		}
+	}
+
+	err := RunCommandLiveOutputCombinedOutput(liveOutputFunc, p, "git", commandArgsArr...)
+
+	output := outputBuilder.String()
 	if err != nil {
 		return fmt.Errorf("error running git clone: %w; output: %s", err, output)
 	}

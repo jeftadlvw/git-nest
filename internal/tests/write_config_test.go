@@ -186,7 +186,7 @@ func TestWriteProjectConfigFiles(t *testing.T) {
 			return "", fmt.Errorf("failed to create temp dir: %w", err)
 		}
 
-		err = utils.CloneGitRepository(testRepoUrl, tempDir, ".")
+		err = utils.CloneGitRepository(testRepoUrl, tempDir, ".", nil)
 		if err != nil {
 			return "", fmt.Errorf("failed to clone git repository: %w", err)
 		}

@@ -36,7 +36,7 @@ func CreateTestEnvironment(settings test_env_models.EnvSettings) (test_env_model
 
 			cloneDirName := strings.TrimSpace(settings.CloneDir)
 
-			err = utils.CloneGitRepository(settings.Origin, tempDir, cloneDirName)
+			err = utils.CloneGitRepository(settings.Origin, tempDir, cloneDirName, nil)
 			if err != nil {
 				return test_env_models.TestEnv{}, fmt.Errorf("unable to clone git repository: %w", err)
 			}
