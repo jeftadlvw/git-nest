@@ -14,7 +14,7 @@ RUN mkdir -p $GIT_NEST_TEST_ENV
 
 # install required packages
 RUN apt update
-RUN apt install git inotify-tools tmux tree -y
+RUN apt install git inotify-tools tmux tree nano -y
 
 # choose base directory and add required files
 WORKDIR $GIT_NEST_BASE
@@ -29,7 +29,9 @@ WORKDIR $GIT_NEST_TEST_ENV
 # create non-root user and give him access to the test env directory
 RUN useradd -r -m -s /bin/bash testenv
 RUN chown -R testenv:testenv $GIT_NEST_TEST_ENV
-USER testenv
+RUN chmod -R o+rw $GIT_NEST_BIN
+RUN chmod -R o+rw /tmp
+USER testenv:testenv
 
 # set container entrypoint
 ENTRYPOINT "$GIT_NEST_BASE/entrypoint.sh" $GIT_NEST_SRC $GIT_NEST_BIN $GIT_NEST_TEST_ENV
