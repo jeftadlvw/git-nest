@@ -5,6 +5,7 @@ import (
 	"github.com/jeftadlvw/git-nest/interfaces"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/jeftadlvw/git-nest/utils"
+	"golang.org/x/term"
 	"os"
 )
 
@@ -23,7 +24,39 @@ func (m Clone) Migrate() error {
 		}
 	}
 
-	err := utils.CloneGitRepository(m.Url.String(), m.Path, m.CloneDirName)
+	var liveOutputFunc func(string) = nil
+	terminalFd := 0
+	var terminalWidth int
+
+	if term.IsTerminal(terminalFd) {
+		// execute once, but allows for early returns using break
+		localTerminalWidth, _, err := term.GetSize(terminalFd)
+		terminalWidth = localTerminalWidth
+
+		for range 1 {
+			if err != nil {
+				break
+			}
+
+			liveOutputFunc = func(line string) {
+
+				// shorten string and add ellipsis if it's shorter than the terminal width
+				if len(line) > terminalWidth {
+					line = line[:terminalWidth-6] + "..."
+				}
+
+				_, _ = fmt.Fprintf(os.Stderr, "\r%*s", -terminalWidth, line)
+			}
+		}
+	}
+
+	err := utils.CloneGitRepository(m.Url.String(), m.Path, m.CloneDirName, liveOutputFunc)
+
+	if term.IsTerminal(terminalFd) {
+		_, _ = fmt.Fprintf(os.Stderr, "\r%*s", -terminalWidth, "")
+		_, _ = fmt.Fprintf(os.Stderr, "\r")
+	}
+
 	if err != nil {
 		return fmt.Errorf("error while cloning into %s: %s", m.Path.SJoin(m.CloneDirName), err)
 	}
