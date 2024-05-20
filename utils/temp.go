@@ -17,7 +17,14 @@ func CreateTempDir() (models.Path, error) {
 CreateTempFile creates a temporary file using os.CreateTemp.
 */
 func CreateTempFile(dir models.Path) (models.Path, error) {
-	file, err := os.CreateTemp(dir.String(), "")
+	return CreatePrefixedTempFile(dir, "")
+}
+
+/*
+CreatePrefixedTempFile creates a temporary file using os.CreateTemp.
+*/
+func CreatePrefixedTempFile(dir models.Path, prefix string) (models.Path, error) {
+	file, err := os.CreateTemp(dir.String(), prefix)
 	if err != nil {
 		return "", err
 	}
