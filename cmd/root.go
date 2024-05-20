@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/jeftadlvw/git-nest/cmd/internal"
+	application_internal "github.com/jeftadlvw/git-nest/internal"
 	"github.com/jeftadlvw/git-nest/internal/constants"
 	"github.com/spf13/cobra"
 )
 
-func Execute() int {
+func Execute() (int, error) {
+
+	var err error = nil
 
 	var rootCmd = &cobra.Command{
 		Use:     constants.ApplicationName,
@@ -21,14 +23,20 @@ and configurations files.`,
 
 	configureRootCommand(rootCmd)
 
-	err := rootCmd.Execute()
-	var exitCode = 0
+	// ensure application mutex
+	lf, err := internal.GetApplicationMutex()
 	if err != nil {
-		fmt.Println(err)
-		exitCode = 1
+		return -1, err
+	}
+	application_internal.AddCleanup(lf.Release)
+
+	// execute command handler
+	err = rootCmd.Execute()
+	if err != nil {
+		return 1, err
 	}
 
-	return exitCode
+	return 0, nil
 }
 
 func configureRootCommand(rootCmd *cobra.Command) {

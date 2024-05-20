@@ -3,6 +3,8 @@ package internal
 import (
 	"fmt"
 	"github.com/jeftadlvw/git-nest/internal"
+	application_internal "github.com/jeftadlvw/git-nest/internal"
+	"github.com/jeftadlvw/git-nest/internal/constants"
 	"github.com/jeftadlvw/git-nest/models"
 	"github.com/spf13/cobra"
 	"os"
@@ -68,33 +70,21 @@ func ErrorWrappedEvaluateContext() (models.NestContext, error) {
 }
 
 /*
-ErrorWrappedLockAcquiringAtProjectRootFromCwd is a wrapper for internal.AcquireLockFile to remove boilerplate code.
-It returns an error if the lockfile at the project root starting from the current working directory
-could not be acquired.
+GetApplicationMutex is a wrapper function to get a git-nest lockfile at the project root directory.
 */
-func ErrorWrappedLockAcquiringAtProjectRootFromCwd() (*os.File, error) {
+func GetApplicationMutex() (internal.LockFile, error) {
+	// get project root
 	projectRoot, err := GetProjectRootFromCwd()
 	if err != nil {
-		return nil, fmt.Errorf("could not get project root: %w", err)
+		return internal.LockFile{}, fmt.Errorf("could not get project root: %w", err)
 	}
 
-	lockFile, err := internal.AcquireLockFile(projectRoot)
+	// create lockfile
+	lf, err := application_internal.CreateLockFile(projectRoot.SJoin(constants.LockFileName))
 	if err != nil {
-		return nil, fmt.Errorf("error while acquiring lock: %w", err)
+		infoText := "Another git-nest process might already be running in this project."
+		return internal.LockFile{}, fmt.Errorf("unable to acquire lockfile: %s\n%s", err, infoText)
 	}
 
-	return lockFile, nil
-}
-
-/*
-ErrorWrappedLockReleasing is a wrapper for internal.ReleaseLockFile to remove boilerplate code.
-It returns an error if the lockfile could not be released.
-*/
-func ErrorWrappedLockReleasing(f *os.File) error {
-	err := internal.ReleaseLockFile(f)
-	if err != nil {
-		return fmt.Errorf("could not release lock: %w", err)
-	}
-
-	return nil
+	return lf, nil
 }

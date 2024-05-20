@@ -34,19 +34,6 @@ func wrapRemoveSubmodule(cmd *cobra.Command, args []string) {
 }
 
 func removeSubmodule(p models.Path, deleteDirectory bool, forceDelete bool) error {
-
-	// acquire lock
-	lockFile, err := internal.ErrorWrappedLockAcquiringAtProjectRootFromCwd()
-	defer func() {
-		err := internal.ErrorWrappedLockReleasing(lockFile)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}()
-	if err != nil {
-		return err
-	}
-
 	// read context
 	context, err := internal.ErrorWrappedEvaluateContext()
 	if err != nil {

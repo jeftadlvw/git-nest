@@ -60,19 +60,6 @@ func wrapAddSubmodule(cmd *cobra.Command, args []string) {
 }
 
 func addSubmodule(url urls.HttpUrl, ref string, cloneDir models.Path) error {
-
-	// acquire lock
-	lockFile, err := internal.ErrorWrappedLockAcquiringAtProjectRootFromCwd()
-	defer func() {
-		err := internal.ErrorWrappedLockReleasing(lockFile)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}()
-	if err != nil {
-		return err
-	}
-
 	// read context
 	context, err := internal.ErrorWrappedEvaluateContext()
 	if err != nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/jeftadlvw/git-nest/cmd"
 	"github.com/jeftadlvw/git-nest/internal"
 	"os"
@@ -18,7 +19,11 @@ func main() {
 		execOnce.Do(internal.Cleanup)
 	})
 
-	exitCode := cmd.Execute()
+	exitCode, err := cmd.Execute()
+	if err != nil {
+		fmt.Printf("error: %s\n", err)
+	}
+
 	execOnce.Do(internal.Cleanup)
 	os.Exit(exitCode)
 }

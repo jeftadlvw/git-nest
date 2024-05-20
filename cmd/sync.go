@@ -23,19 +23,6 @@ func wrapSync(cmd *cobra.Command, args []string) {
 }
 
 func sync() error {
-
-	// acquire lock
-	lockFile, err := internal.ErrorWrappedLockAcquiringAtProjectRootFromCwd()
-	defer func() {
-		err := internal.ErrorWrappedLockReleasing(lockFile)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}()
-	if err != nil {
-		return err
-	}
-
 	// read context
 	context, err := internal.ErrorWrappedEvaluateContext()
 	if err != nil {
