@@ -7,6 +7,14 @@
 
 ## Installation
 
+UNIX-based operating systems:
+```shell
+curl -fsSL https://raw.githubusercontent.com/jeftadlvw/git-nest/main/install.sh | bash
+```
+
+Windows users:
+> ToDo
+
 ### Binaries
 We provide pre-built binary files for major platforms and architectures at every release. You can find them [here](https://github.com/jeftadlvw/git-nest/releases).
 
