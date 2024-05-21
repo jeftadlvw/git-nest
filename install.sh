@@ -11,6 +11,7 @@ REPOSITORY="https://github.com/$REPOSITORY_NAME"
 INSTALL_DIR=$HOME/.local/bin
 BINARY_NAME="git-nest"
 
+TAB="   "
 echo "Installing git_nest to $INSTALL_DIR/$BINARY_NAME."
 echo ""
 
@@ -55,7 +56,7 @@ fi
 DOWNLOAD_URL="$REPOSITORY/releases/download/$LATEST_TAG/git-nest_$DOWNLOAD_TARGET"
 echo "Downloading from $DOWNLOAD_URL"
 
-curl -L $DOWNLOAD_URL -o $INSTALL_DIR/$BINARY_NAME
+curl -fL $DOWNLOAD_URL -o $INSTALL_DIR/$BINARY_NAME
 if [ $? -ne 0 ]; then
     echo "error: unable to download binary from $ASSET_URL and install it to $INSTALL_DIR/$BINARY_NAME"
     exit 1
@@ -76,5 +77,7 @@ echo ""
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
     echo "Notice: $INSTALL_DIR is not in your PATH."
     echo "Add it to your PATH and restart your shell in order to use git-nest. E.g:"
-    echo "echo -e \"\n\n#local binaries\nPATH=\\\"\\\$PATH:$INSTALL_DIR\\\"\n\" >> ~/.bashrc"
+    echo ""
+    echo "$TAB echo -e \"\n\n#local binaries\nPATH=\\\"\\\$PATH:$INSTALL_DIR\\\"\n\" >> ~/.bashrc"
+    echo ""
 fi
