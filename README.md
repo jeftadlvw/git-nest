@@ -13,7 +13,11 @@ curl -fsSL https://raw.githubusercontent.com/jeftadlvw/git-nest/main/install.sh 
 ```
 
 Windows users:
-> ToDo
+```shell
+powershell -c "irm https://raw.githubusercontent.com/jeftadlvw/git-nest/main/install.ps1 | iex"
+```
+
+These scripts also provide a command that adds the installation directory to the user's PATH. Restart your shell afterward.
 
 ### Binaries
 We provide pre-built binary files for major platforms and architectures at every release. You can find them [here](https://github.com/jeftadlvw/git-nest/releases).
