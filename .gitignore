@@ -15,4 +15,4 @@
 devbox.lock
 
 # artifacts
-build
+_build

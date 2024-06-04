@@ -45,7 +45,7 @@ The building procedure is defined as a Makefile target.
 make
 ```
 
-You'll find the compiled binary at `./build/git-nest`. Make sure the binary is in your PATH variable, so _git_ is able to find it.
+You'll find the compiled binary at `_build/git-nest`. Make sure the binary is in your PATH variable, so _git_ is able to find it.
 
 ### Using Docker
 > TODO

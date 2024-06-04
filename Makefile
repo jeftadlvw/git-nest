@@ -13,7 +13,7 @@ endif
 
 # define general build variables
 APP_NAME := git-nest
-BUILD_DIR := build
+BUILD_DIR := _build
 ROOT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 CURRENT_TIMESTAMP := $(shell $(TIME))
 
@@ -43,7 +43,7 @@ build: clean test
 			"
 
 clean:
-	@$(RM) -rf build
+	@$(RM) -rf _build
 
 test:
 	@go test ./.../tests
@@ -63,6 +63,7 @@ test-env:
 debug:
 	@echo "OS:\t\t\t$(DETECTED_OS)"
 	@echo "ROOT_DIR:\t\t$(ROOT_DIR)"
+	@echo "BUILD_DIR:\t\t$(BUILD_DIR)"
 	@echo
 	@echo "INJECT_VERSION:\t\t$(INJECT_VERSION_KEY) -> $(INJECT_VERSION_VALUE)"
 	@echo "INJECT_COMMIT:\t\t$(INJECT_COMMIT_KEY) -> $(INJECT_COMMIT_VALUE)"
