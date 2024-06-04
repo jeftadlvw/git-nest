@@ -4,10 +4,13 @@
 SRC_DIR="/git-nest/src"
 BIN_DIR="/git-nest/build"
 
+SCRIPT_VERSION="1.0.1"
 APP_NAME="git-nest"
 CURRENT_TIMESTAMP=$(date +%s)
 WORKING_DIR=$(pwd)
 TAB="   "
+
+echo "git-nest build script version $SCRIPT_VERSION"
 
 # perform variable and input validation
 if [ -r "$SRC_DIR" ] && [ -w "$SRC_DIR" ]; then
