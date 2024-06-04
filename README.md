@@ -134,7 +134,7 @@ There also is a makefile target that combines these two commands. It will reuse 
 make test-env
 ```
 
-This opens a tmux session with two terminals. On the left side you see the output of the file watcher that automatically builds your source code on file changes. On the right side is your regular bash terminal with which you can interact and test _git-nest_ with. There is a command called `prune`, that completely wipes the test-env directory.
+This opens a tmux session with two terminals. On the left side you see the output of the file watcher that automatically builds your source code on file changes. On the right side is your regular bash terminal with which you can interact and test _git-nest_ with. There is a command called `prune`, that completely wipes the test-env directory. We also provide some default repositories you can clone. List them with `list_repos`.
 
 ### Supported Go versions
 As of current development, `go-1.22` is required to build the source code.

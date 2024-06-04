@@ -4,6 +4,13 @@ SRC_DIR=$1
 BIN_DIR=$2
 TEST_ENV_DIR=$3
 
+# some default git repositories
+export REPO_1="https://github.com/githubtraining/actions-and-packages.git"
+export REPO_2="https://github.com/githubtraining/exercise-use-secrets.git"
+export REPO_3="https://github.com/githubtraining/hellogitworld.git"
+export REPO_4="https://github.com/jeftadlvw/example-repository.git"
+export REPO_5="https://github.com/git-lfs/git-lfs.git"
+
 function printUsage() {
     echo "usage: entrypoint.sh [source directory] [binary output directory] [test environment directory]"
 }
@@ -61,6 +68,14 @@ function prune {
     rm -rf $TEST_ENV_DIR/*
 }
 
+function list_repos {
+    echo "\$REPO_1=$REPO_1"
+    echo "\$REPO_2=$REPO_2"
+    echo "\$REPO_3=$REPO_3"
+    echo "\$REPO_4=$REPO_4"
+    echo "\$REPO_5=$REPO_5"
+}
+
 # add binary directory to PATH
 PATH="$PATH:$BIN_DIR"
 
@@ -92,6 +107,7 @@ tmux send-keys -t $SESSION_NAME:0.0 "watch_and_build $SRC_DIR $BIN_DIR" C-m
 
 # set up prune function in bash pane
 tmux send-keys -t $SESSION_NAME:0.1 "$(declare -f prune) && clear && history -c && history -w" C-m
+tmux send-keys -t $SESSION_NAME:0.1 "$(declare -f list_repos) && clear && history -c && history -w" C-m
 
 # select bash pane
 tmux select-pane -t $SESSION_NAME:0.1
