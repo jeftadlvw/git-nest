@@ -4,7 +4,7 @@
 SRC_DIR="/git-nest/src"
 BIN_DIR="/git-nest/build"
 
-SCRIPT_VERSION="1.0.1"
+SCRIPT_VERSION="1.1.0"
 APP_NAME="git-nest"
 CURRENT_TIMESTAMP=$(date +%s)
 WORKING_DIR=$(pwd)
@@ -19,15 +19,15 @@ if [ -r "$SRC_DIR" ] && [ -w "$SRC_DIR" ]; then
     exit 1
 fi
 
-if [ -z "$GIT_NEST_BUILD_VERSION" ]; then
-    echo "environment variable 'GIT_NEST_BUILD_VERSION‘ not set."
-    exit 1
-fi
-
-if [ -z "$GIT_NEST_BUILD_COMMIT_SHA" ]; then
-    echo "environment variable 'GIT_NEST_BUILD_COMMIT_SHA' not set."
-    exit 1
-fi
+# if [ -z "$GIT_NEST_BUILD_VERSION" ]; then
+#     echo "environment variable 'GIT_NEST_BUILD_VERSION‘ not set."
+#     exit 1
+# fi
+#
+# if [ -z "$GIT_NEST_BUILD_COMMIT_SHA" ]; then
+#     echo "environment variable 'GIT_NEST_BUILD_COMMIT_SHA' not set."
+#     exit 1
+# fi
 
 echo "Environment checks finished."
 
@@ -51,15 +51,22 @@ INJECT_COMPILE_TIME_VALUE="${GIT_NEST_COMPILE_TIME:-$CURRENT_TIMESTAMP}"    # GI
 INJECT_EPHEMERAL_BUILD_KEY="$INJECT_BASE/constants.ephemeralBuildStr"
 INJECT_EPHEMERAL_BUILD_VALUE="false"
 
+BUILD_TARGETS=()
+
 # define GOARCH and GOOS matrix
-BUILD_TARGETS=(
-    "linux/amd64"
-    "linux/arm64"
-    "darwin/amd64"
-    "darwin/arm64"
-    "windows/amd64"
-    "windows/arm64"
-)
+if [ -n "$TARGET_OVERRIDE" ]; then
+    IFS=' ' read -r -a BUILD_TARGETS <<< "$TARGET_OVERRIDE"
+else
+    # default build matrix
+    BUILD_TARGETS=(
+        "linux/amd64"
+        "linux/arm64"
+        "darwin/amd64"
+        "darwin/arm64"
+        "windows/amd64"
+        "windows/arm64"
+    )
+fi
 
 # print build settings
 echo "Starting build process using the configuration below:"

@@ -48,10 +48,63 @@ make
 You'll find the compiled binary at `_build/git-nest`. Make sure the binary is in your PATH variable, so _git_ is able to find it.
 
 ### Using Docker
-> TODO
+There also is a Dockerfile that creates an image with which you can create binaries for a specific target.
+First, build the image.
+
+```shell
+docker build -t git-nest/build _docker/build
+```
+
+Then run it and mount the source code in read-only mode to `/git-nest/src` and output directory to `/git-nest/build`:
+```shell
+docker run \
+    -it \
+    --rm \
+    -v ./:/git-nest/src:ro \
+    -v ./_build:/git-nest/build \
+    git-nest/build
+```
+
+This will build binaries for supported default targets (Windows, Linux, Darwin (MacOS) | amd64, arm64) and generate a `checksums.txt` containing pre-calculated sha256 hashes for the artifacts.
+
+#### Custom build targets
+You can specify your own targets with the `TARGET_OVERRIDE` environment variable:
+```shell
+docker run \
+    -it \
+    --rm \
+    -e TARGET_OVERRIDE="openbsd/amd64" \
+    -v ./:/git-nest/src:ro \
+    -v ./_build:/git-nest/build \
+    git-nest/build
+```
+
+This will now build for the openbsd operating system on amd64-bit processors. You can also define multiple targets at once by just separating them using a whitespace, e.g.:
+```shell
+-e TARGET_OVERRIDE="js/wasm openbsd/amd64 android/arm64"
+```
+
+#### Injecting version and commit hash
+Official release binaries have an injected binary version and commit hash. You can do that too by using the `GIT_NEST_BUILD_VERSION` and `GIT_NEST_BUILD_COMMIT_SHA` environment variables:
+```shell
+docker run \
+    -it \
+    --rm \
+    -e GIT_NEST_BUILD_VERSION="your-version-tag" \
+    -e GIT_NEST_BUILD_COMMIT_SHA="your-commit-hash" \
+    -v ./:/git-nest/src:ro \
+    -v ./_build:/git-nest/build \
+    git-nest/build
+```
+
+#### Skipping tests
+The script runs all tests before actually creating the binary artifacts. Although not recommended, you can skip the tests using the `SKIP_TESTS` environment variable. It's just required that the variable has a value.
+```shell
+-e SKIP_TESTS="true" # value can be anything
+```
 
 ## Getting started
-There currently is not much documentation outside from the cli help:
+There currently is not much documentation outside from the cli help and this README:
 ```
 $ git nest
 Usage:
@@ -147,6 +200,8 @@ As of current development, `go-1.22` is required to build the source code.
 
 ## Roadmap
 We are working on it. We have many ideas and much room for improvements. We'll structure and prioritize our internal list before releasing it to the public.
+
+You can have a look at the issues where we curate short-term planned features and improvements.
 
 ## Contributing
 Reviewing and accepting contributions is temporarily suspended until the project's foundation is established. More information will follow soon. Issues and bugs however are welcome!
