@@ -84,6 +84,8 @@ This will now build for the openbsd operating system on amd64-bit processors. Yo
 -e TARGET_OVERRIDE="js/wasm openbsd/amd64 android/arm64"
 ```
 
+Supported build targets are listed [here](https://go.dev/doc/install/source#environment) (section `$GOOS and $GOARCH`).
+
 #### Injecting version and commit hash
 Official release binaries have an injected binary version and commit hash. You can do that too by using the `GIT_NEST_BUILD_VERSION` and `GIT_NEST_BUILD_COMMIT_SHA` environment variables:
 ```shell
