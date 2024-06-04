@@ -49,14 +49,20 @@ func WriteSubmoduleIgnoreConfig(p models.Path, modules []models.Submodule) error
 	}
 	submoduleGitExcludePart = submoduleGitExcludePart + gitExcludeSuffix
 
-	fileContent := submoduleGitExcludePart
+	fileContent := ""
 
 	existingContent, err := utils.ReadFileToStr(p)
-	if err == nil {
-		localFileContent, localErr := utils.StringInsertAtFirst(existingContent, submoduleGitExcludePart, gitExcludePrefix, gitExcludeSuffix)
-		if localErr == nil {
-			fileContent = localFileContent
-		}
+	if err != nil {
+		return err
+	}
+
+	localFileContent, localErr := utils.StringInsertAtFirst(existingContent, submoduleGitExcludePart, gitExcludePrefix, gitExcludeSuffix)
+	if localErr != nil {
+		// error during insert (which should only happen if delimiters could not be found)
+		// then append gitExcludePart to existing content
+		fileContent = strings.TrimSpace(existingContent) + "\n\n" + submoduleGitExcludePart + "\n"
+	} else {
+		fileContent = strings.TrimSpace(localFileContent) + "\n"
 	}
 
 	err = utils.WriteStrToFile(p, fileContent)
