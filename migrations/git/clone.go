@@ -38,6 +38,10 @@ func (m Clone) Migrate() error {
 				break
 			}
 
+			if terminalWidth == 0 {
+				break
+			}
+
 			liveOutputFunc = func(line string) {
 
 				// shorten string and add ellipsis if it's shorter than the terminal width
