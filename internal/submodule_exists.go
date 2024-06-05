@@ -9,6 +9,7 @@ import (
 
 const (
 	SUBMODULE_EXISTS_OK = iota
+	SUBMODULE_EXISTS_UNDEFINED_REF
 	SUBMODULE_EXISTS_ERR_NO_EXIST
 	SUBMODULE_EXISTS_ERR_FILE
 	SUBMODULE_EXISTS_ERR_NO_GIT
@@ -45,6 +46,10 @@ func SubmoduleExists(s models.Submodule, root models.Path) (int, string, error) 
 		return SUBMODULE_EXISTS_ERR_REMOTE, submoduleGitRemoteUrl, nil
 	}
 
+	if s.Ref == "" {
+		return SUBMODULE_EXISTS_UNDEFINED_REF, "", nil
+	}
+
 	var (
 		returnFlag    = SUBMODULE_EXISTS_OK
 		returnPayload string
@@ -64,7 +69,7 @@ func SubmoduleExists(s models.Submodule, root models.Path) (int, string, error) 
 			returnPayload = remoteRef
 		}
 	} else {
-		if remoteRefAbbrev != s.Ref {
+		if s.Ref != "" && remoteRefAbbrev != s.Ref {
 			returnFlag = SUBMODULE_EXISTS_ERR_HEAD
 			returnPayload = remoteRefAbbrev
 		}
@@ -99,6 +104,8 @@ func FmtSubmoduleExistOutput(status int, payload string, err error) (string, err
 	switch status {
 	case SUBMODULE_EXISTS_OK:
 		existStr = "ok"
+	case SUBMODULE_EXISTS_UNDEFINED_REF:
+		existStr = "ok, empty ref"
 	case SUBMODULE_EXISTS_ERR_NO_EXIST:
 		existStr = "no exist"
 	case SUBMODULE_EXISTS_ERR_FILE:
