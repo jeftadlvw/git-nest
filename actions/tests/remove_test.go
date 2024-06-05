@@ -62,21 +62,21 @@ func TestRemoveSubmoduleFromContext(t *testing.T) {
 		t.Run(fmt.Sprintf("TestAddSubmoduleInContext-%d", index+1), func(t *testing.T) {
 			t.Parallel()
 
-			testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: repoDir})
+			tempDir := models.Path(t.TempDir())
+			err := test_env.CreateTestEnvironment(tempDir, test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: repoDir})
 			if err != nil {
 				t.Fatalf("error creating test environment: %s", err)
 				return
 			}
-			defer testEnv.Destroy()
 
 			if tc.addTempFile {
 				// create test file and directory
-				err = utils.WriteStrToFile(testEnv.Dir.SJoin(repoDir+"/"+testFile), "")
+				err = utils.WriteStrToFile(tempDir.SJoin(repoDir+"/"+testFile), "")
 				if err != nil {
 					t.Fatalf("error writing test file: %s", err)
 				}
 
-				absoluteRepoDirPath := testEnv.Dir.SJoin(repoDir)
+				absoluteRepoDirPath := tempDir.SJoin(repoDir)
 
 				if tc.commitTempFile {
 					out, err := utils.RunCommandCombinedOutput(absoluteRepoDirPath, "git", "add", ".")
@@ -93,8 +93,8 @@ func TestRemoveSubmoduleFromContext(t *testing.T) {
 				}
 			}
 
-			localTestDirEmpty := testEnv.Dir.SJoin(testDirEmpty)
-			localTestDirFull := testEnv.Dir.SJoin(testDirFull)
+			localTestDirEmpty := tempDir.SJoin(testDirEmpty)
+			localTestDirFull := tempDir.SJoin(testDirFull)
 
 			err = os.Mkdir(localTestDirEmpty.String(), os.ModePerm)
 			if err != nil {
@@ -112,7 +112,7 @@ func TestRemoveSubmoduleFromContext(t *testing.T) {
 			}
 
 			// create context
-			context, err := internal.CreateContext(testEnv.Dir)
+			context, err := internal.CreateContext(tempDir)
 			if err != nil {
 				t.Fatalf("error creating context: %s", err)
 			}

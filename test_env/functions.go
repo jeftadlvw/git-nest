@@ -10,18 +10,11 @@ import (
 	"strings"
 )
 
-func CreateTestEnvironment(settings test_env_models.EnvSettings) (test_env_models.TestEnv, error) {
+func CreateTestEnvironment(root models.Path, settings test_env_models.EnvSettings) error {
 
 	var err error
 
-	tempDir := models.Path(strings.TrimSpace(settings.Path))
-
-	if tempDir == "" {
-		tempDir, err = utils.CreateTempDir()
-		if err != nil {
-			return test_env_models.TestEnv{}, fmt.Errorf("error creating temporary directory: %w", err)
-		}
-	}
+	tempDir := root.Clean()
 
 	if !settings.NoGit {
 
@@ -31,14 +24,14 @@ func CreateTestEnvironment(settings test_env_models.EnvSettings) (test_env_model
 			settings.Origin = strings.TrimSpace(settings.Origin)
 
 			if settings.Origin == "" {
-				return test_env_models.TestEnv{}, errors.New("test environment origin is empty")
+				return errors.New("test environment origin is empty")
 			}
 
 			cloneDirName := strings.TrimSpace(settings.CloneDir)
 
 			err = utils.CloneGitRepository(settings.Origin, tempDir, cloneDirName, nil)
 			if err != nil {
-				return test_env_models.TestEnv{}, fmt.Errorf("unable to clone git repository: %w", err)
+				return fmt.Errorf("unable to clone git repository: %w", err)
 			}
 			gitDir := tempDir
 
@@ -52,7 +45,7 @@ func CreateTestEnvironment(settings test_env_models.EnvSettings) (test_env_model
 			if settings.Ref != "" {
 				err = utils.GitCheckout(gitDir, settings.Ref)
 				if err != nil {
-					return test_env_models.TestEnv{}, fmt.Errorf("error while changing ref: %s", err)
+					return fmt.Errorf("error while changing ref: %s", err)
 				}
 			}
 
@@ -61,24 +54,22 @@ func CreateTestEnvironment(settings test_env_models.EnvSettings) (test_env_model
 		} else {
 			_, err = utils.RunCommandCombinedOutput(tempDir, "git", "init")
 			if err != nil {
-				return test_env_models.TestEnv{}, fmt.Errorf("error initializing git repository: %w", err)
+				return fmt.Errorf("error initializing git repository: %w", err)
 			}
 			repositoryDir = tempDir
 		}
 
 		out, err := utils.RunCommandCombinedOutput(repositoryDir, "git", "config", "user.name", "foo")
 		if err != nil {
-			return test_env_models.TestEnv{}, fmt.Errorf("error setting local git user at %s: %w; %s", repositoryDir, err, out)
+			return fmt.Errorf("error setting local git user at %s: %w; %s", repositoryDir, err, out)
 		}
 
 		out, err = utils.RunCommandCombinedOutput(repositoryDir, "git", "config", "user.email", "foo@email.com")
 		if err != nil {
 
-			return test_env_models.TestEnv{}, fmt.Errorf("error setting local git email: %w; %s", err, out)
+			return fmt.Errorf("error setting local git email: %w; %s", err, out)
 		}
 	}
 
-	return test_env_models.TestEnv{
-		Dir: tempDir,
-	}, nil
+	return nil
 }

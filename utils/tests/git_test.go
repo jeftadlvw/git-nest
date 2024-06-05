@@ -93,15 +93,14 @@ func TestGitCheckout(t *testing.T) {
 			repoDir := tc.dir
 
 			if tc.useExampleRepo {
-
-				testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"})
+				tempDir := models.Path(t.TempDir())
+				err := test_env.CreateTestEnvironment(tempDir, test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"})
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
 					return
 				}
-				defer testEnv.Destroy()
 
-				repoDir = testEnv.Dir.SJoin("temp")
+				repoDir = tempDir.SJoin("temp")
 			}
 
 			err := utils.GitCheckout(repoDir, tc.ref)
@@ -149,15 +148,14 @@ func TestGetGitRootDirectory(t *testing.T) {
 			expectDir := tc.expected
 
 			if tc.useTempDir {
-				var tempDir models.Path
-				testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: tc.cloneDir})
+				tempDir := models.Path(t.TempDir())
+				err := test_env.CreateTestEnvironment(tempDir, test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: tc.cloneDir})
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
 					return
 				}
-				defer testEnv.Destroy()
 
-				tempDir = testEnv.Dir
+				tempDir = tempDir
 
 				if tc.cloneDir == "" {
 					repoDir = tempDir.SJoin("example-repository")
@@ -214,13 +212,13 @@ func TestGetGitRemoteUrl(t *testing.T) {
 			repoDir := tc.dir
 
 			if tc.useTempDir {
-				testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{Origin: tc.cloneTempRepo, CloneDir: "temp"})
+				tempDir := models.Path(t.TempDir())
+				err := test_env.CreateTestEnvironment(tempDir, test_env_models.EnvSettings{Origin: tc.cloneTempRepo, CloneDir: "temp"})
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
 				}
-				defer testEnv.Destroy()
 
-				repoDir = testEnv.Dir.SJoin("temp")
+				repoDir = tempDir.SJoin("temp")
 			}
 
 			remoteUrl, err := utils.GetGitRemoteUrl(repoDir)
@@ -268,13 +266,13 @@ func TestGetGitFetchHead(t *testing.T) {
 					envSettings.Ref = tc.checkoutBeforeTest
 				}
 
-				testEnv, err := test_env.CreateTestEnvironment(envSettings)
+				tempDir := models.Path(t.TempDir())
+				err := test_env.CreateTestEnvironment(tempDir, envSettings)
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
 				}
-				defer testEnv.Destroy()
 
-				repoDir = testEnv.Dir.SJoin("temp")
+				repoDir = tempDir.SJoin("temp")
 			}
 
 			headRef, headRefAbbrev, err := utils.GetGitFetchHead(repoDir)
@@ -321,13 +319,13 @@ func TestGetGitHasUntrackedChanges(t *testing.T) {
 			repoDir := tc.dir
 
 			if tc.useExampleRepo {
+				tempDir := models.Path(t.TempDir())
 				envSettings := test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"}
-				testEnv, err := test_env.CreateTestEnvironment(envSettings)
+				err := test_env.CreateTestEnvironment(tempDir, envSettings)
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
 				}
-				defer testEnv.Destroy()
-				repoDir = testEnv.Dir.SJoin("temp")
+				repoDir = tempDir.SJoin("temp")
 
 				if tc.createFile {
 					err = utils.WriteStrToFile(repoDir.SJoin(testFileName), "")
@@ -390,13 +388,13 @@ func TestGetGitHasUnpublishedChanges(t *testing.T) {
 			repoDir := tc.dir
 
 			if tc.useExampleRepo {
+				tempDir := models.Path(t.TempDir())
 				envSettings := test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"}
-				testEnv, err := test_env.CreateTestEnvironment(envSettings)
+				err := test_env.CreateTestEnvironment(tempDir, envSettings)
 				if err != nil {
 					t.Fatalf("error creating test environment: %s", err)
 				}
-				defer testEnv.Destroy()
-				repoDir = testEnv.Dir.SJoin("temp")
+				repoDir = tempDir.SJoin("temp")
 
 				if tc.createFile {
 					err = utils.WriteStrToFile(repoDir.SJoin(testFileName), "")

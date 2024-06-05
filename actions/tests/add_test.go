@@ -74,21 +74,21 @@ func TestAddSubmoduleInContext(t *testing.T) {
 		t.Run(fmt.Sprintf("TestAddSubmoduleInContext-%d", index+1), func(t *testing.T) {
 			t.Parallel()
 
-			testEnv, err := test_env.CreateTestEnvironment(test_env_models.EnvSettings{EmptyGit: true})
+			tempDir := models.Path(t.TempDir())
+			err := test_env.CreateTestEnvironment(tempDir, test_env_models.EnvSettings{EmptyGit: true})
 			if err != nil {
 				t.Fatalf("error creating test environment: %s", err)
 				return
 			}
-			defer testEnv.Destroy()
 
 			// create test file and directory
-			err = utils.WriteStrToFile(testEnv.Dir.SJoin(testFile), "")
+			err = utils.WriteStrToFile(tempDir.SJoin(testFile), "")
 			if err != nil {
 				t.Fatalf("error writing test file: %s", err)
 			}
 
-			localTestDirEmpty := testEnv.Dir.SJoin(testDirEmpty)
-			localTestDirFull := testEnv.Dir.SJoin(testDirFull)
+			localTestDirEmpty := tempDir.SJoin(testDirEmpty)
+			localTestDirFull := tempDir.SJoin(testDirFull)
 			err = os.Mkdir(localTestDirEmpty.String(), os.ModePerm)
 			err = os.Mkdir(localTestDirFull.String(), os.ModePerm)
 
@@ -98,7 +98,7 @@ func TestAddSubmoduleInContext(t *testing.T) {
 			}
 
 			// create context
-			context, err := internal.CreateContext(testEnv.Dir)
+			context, err := internal.CreateContext(tempDir)
 			if err != nil {
 				t.Fatalf("error creating context: %s", err)
 			}
