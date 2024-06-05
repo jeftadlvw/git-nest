@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jeftadlvw/git-nest/actions"
 	"github.com/jeftadlvw/git-nest/cmd/internal"
@@ -16,7 +17,7 @@ func createAddCmd() *cobra.Command {
 	var addCmd = &cobra.Command{
 		Use:   "add [url]",
 		Short: "Add and clone a remote submodule into this project",
-		Run:   internal.RunWrapper(wrapAddSubmodule, internal.ArgExactN(1)),
+		RunE:  internal.RunWrapper(wrapAddSubmodule, internal.ArgExactN(1)),
 	}
 
 	addCmd.Flags().StringP("ref", "r", "", "repository reference")
@@ -25,7 +26,7 @@ func createAddCmd() *cobra.Command {
 	return addCmd
 }
 
-func wrapAddSubmodule(cmd *cobra.Command, args []string) {
+func wrapAddSubmodule(cmd *cobra.Command, args []string) error {
 
 	var (
 		url      urls.HttpUrl
@@ -36,15 +37,14 @@ func wrapAddSubmodule(cmd *cobra.Command, args []string) {
 	// validate url
 	u, err := urls.HttpUrlFromString(args[0])
 	if err != nil {
-		fmt.Printf("error: invalid url\n")
-		return
+		return errors.New("invalid url")
 	}
 	url = u
 
 	refRaw, _ := cmd.Flags().GetString("ref")
 	ref = strings.TrimSpace(refRaw)
 	if ref == "" && ref != refRaw {
-		fmt.Printf("error: no value defined for flag 'ref' \n")
+		return errors.New("no value defined for flag 'ref'")
 	}
 
 	cloneDirRaw, _ := cmd.Flags().GetString("path")
@@ -53,10 +53,7 @@ func wrapAddSubmodule(cmd *cobra.Command, args []string) {
 		fmt.Printf("error: no value defined for flag 'path' \n")
 	}
 
-	err = addSubmodule(url, ref, cloneDir)
-	if err != nil {
-		fmt.Printf("error: %s\n", err)
-	}
+	return addSubmodule(url, ref, cloneDir)
 }
 
 func addSubmodule(url urls.HttpUrl, ref string, cloneDir models.Path) error {

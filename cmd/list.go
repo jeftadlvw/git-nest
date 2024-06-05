@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	cmdInternal "github.com/jeftadlvw/git-nest/cmd/internal"
 	"github.com/jeftadlvw/git-nest/internal"
 	"github.com/spf13/cobra"
 	"text/tabwriter"
@@ -13,24 +14,24 @@ func createListCmd() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List nested modules",
-		Run: func(cmd *cobra.Command, args []string) {
-			printSubmodules()
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return printSubmodules()
 		},
 	}
 
 	return listCmd
 }
 
-func printSubmodules() {
-	context, err := internal.EvaluateContext()
+func printSubmodules() error {
+	// read context
+	context, err := cmdInternal.ErrorWrappedEvaluateContext()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	if len(context.Config.Submodules) == 0 {
 		fmt.Println("no nested modules defined in current context")
-		return
+		return nil
 	}
 
 	submodulesExist := internal.SubmodulesExist(context.Config.Submodules, context.ProjectRoot)
@@ -51,4 +52,5 @@ func printSubmodules() {
 	_ = tabWriter.Flush()
 
 	fmt.Println(buffer.String())
+	return nil
 }

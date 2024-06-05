@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
+	cmdInternal "github.com/jeftadlvw/git-nest/cmd/internal"
 	"github.com/jeftadlvw/git-nest/internal"
 	"github.com/spf13/cobra"
-	"text/tabwriter"
 )
 
 func createVerifyCmd() *cobra.Command {
@@ -13,27 +12,23 @@ func createVerifyCmd() *cobra.Command {
 		Use:     "verify",
 		Aliases: []string{"v"},
 		Short:   "Verify configuration and nested modules",
-		Run: func(cmd *cobra.Command, args []string) {
-			verifyConfigAndSubmodules()
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return verifyConfigAndSubmodules()
 		},
 	}
 
 	return listCmd
 }
 
-func verifyConfigAndSubmodules() {
-	context, err := internal.EvaluateContext()
+func verifyConfigAndSubmodules() error {
+	// read context
+	context, err := cmdInternal.ErrorWrappedEvaluateContext()
 	if err != nil {
-		fmt.Println("context error:", err)
-		return
+		return err
 	}
 
 	submodulesExist := internal.SubmodulesExist(context.Config.Submodules, context.ProjectRoot)
 
-	buffer := bytes.NewBufferString("")
-	tabWriter := tabwriter.NewWriter(buffer, 5, 0, 0, '.', tabwriter.TabIndent)
-
-	_, _ = fmt.Fprintf(tabWriter, "i\tpath\torigin\tref\tstatus")
 	for index := range len(context.Config.Submodules) {
 		submoduleExists := submodulesExist[index]
 		existStr, err := internal.FmtSubmoduleExistOutput(submoduleExists.Status, submoduleExists.Payload, submoduleExists.Error)
@@ -41,8 +36,10 @@ func verifyConfigAndSubmodules() {
 			existStr = "internal error: " + err.Error()
 		}
 
-		if existStr != "ok" {
+		if submoduleExists.Status != internal.SUBMODULE_EXISTS_OK && submoduleExists.Status != internal.SUBMODULE_EXISTS_UNDEFINED_REF {
 			fmt.Printf("error for nested module at index %d: %s\n", index, existStr)
 		}
 	}
+
+	return nil
 }

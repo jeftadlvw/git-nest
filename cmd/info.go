@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	cmdInternal "github.com/jeftadlvw/git-nest/cmd/internal"
 	"github.com/jeftadlvw/git-nest/internal"
 	"github.com/jeftadlvw/git-nest/internal/constants"
 	"github.com/jeftadlvw/git-nest/utils"
@@ -17,9 +18,9 @@ func createInfoCmd() *cobra.Command {
 		Use:     "info",
 		Aliases: []string{"i"},
 		Short:   "Print various debug information",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			redact, _ := cmd.Flags().GetBool("redact")
-			printDebugInformation(redact)
+			return printDebugInformation(redact)
 		},
 	}
 	infoCmd.Flags().BoolP("redact", "r", false, "hide personal info")
@@ -27,11 +28,11 @@ func createInfoCmd() *cobra.Command {
 	return infoCmd
 }
 
-func printDebugInformation(redact bool) {
-	context, err := internal.EvaluateContext()
+func printDebugInformation(redact bool) error {
+	// read context
+	context, err := cmdInternal.ErrorWrappedEvaluateContext()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	workingDir := context.WorkingDirectory.String()
@@ -118,4 +119,6 @@ func printDebugInformation(redact bool) {
 	if strings.HasPrefix(constants.Version(), "[") || constants.Ref() == "unset" || constants.CompilationTimestamp() == -1 {
 		fmt.Printf("\nThis binary is most likely a local development built.\n")
 	}
+
+	return nil
 }

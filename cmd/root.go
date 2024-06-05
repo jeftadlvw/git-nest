@@ -18,7 +18,8 @@ func Execute() (int, error) {
 		Long: `git-nest is a git command line extension for nesting external repositories
 in your project without your parent repository noticing, using native features
 and configurations files.`,
-		Run: internal.PrintUsage,
+		RunE:          internal.PrintUsage,
+		SilenceErrors: true,
 	}
 
 	configureRootCommand(rootCmd)

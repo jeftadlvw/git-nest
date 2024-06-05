@@ -12,14 +12,11 @@ import (
 var syncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: fmt.Sprintf("Update and apply state changes"),
-	Run:   internal.RunWrapper(wrapSync),
+	RunE:  internal.RunWrapper(wrapSync),
 }
 
-func wrapSync(cmd *cobra.Command, args []string) {
-	err := sync()
-	if err != nil {
-		fmt.Printf("error: %s\n", err)
-	}
+func wrapSync(cmd *cobra.Command, args []string) error {
+	return sync()
 }
 
 func sync() error {

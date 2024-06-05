@@ -13,8 +13,9 @@ import (
 /*
 PrintUsage is a wrapper function around the default cobra.Command Usage() function.
 */
-func PrintUsage(cmd *cobra.Command, args []string) {
+func PrintUsage(cmd *cobra.Command, args []string) error {
 	_ = cmd.Usage()
+	return nil
 }
 
 /*
@@ -23,19 +24,16 @@ It takes a runner function and an argument count validation function. If the lat
 is not nil, it is executed first and checked for returned errors. If no errors
 were returned, the runner function is executed.
 */
-func RunWrapper(run func(cmd *cobra.Command, args []string), validateArgCount ...func(c int) error) func(cmd *cobra.Command, args []string) {
-	return func(cmd *cobra.Command, args []string) {
+func RunWrapper(run func(cmd *cobra.Command, args []string) error, validateArgCount ...func(c int) error) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
 		if validateArgCount != nil {
 			for _, validationFunc := range validateArgCount {
 				err := validationFunc(len(args))
-				if err != nil {
-					fmt.Printf("fatal: argument count error: %s\n", err)
-					return
-				}
+				return fmt.Errorf("argument count error: %s\n", err)
 			}
 		}
 
-		run(cmd, args)
+		return run(cmd, args)
 	}
 }
 

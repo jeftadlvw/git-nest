@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/jeftadlvw/git-nest/actions"
 	"github.com/jeftadlvw/git-nest/cmd/internal"
 	"github.com/jeftadlvw/git-nest/migrations"
@@ -15,7 +14,7 @@ func createRemoveCommand() *cobra.Command {
 		Use:     "remove [path]",
 		Aliases: []string{"rm"},
 		Short:   "Remove a submodule from this project",
-		Run:     internal.RunWrapper(wrapRemoveSubmodule, internal.ArgExactN(1)),
+		RunE:    internal.RunWrapper(wrapRemoveSubmodule, internal.ArgExactN(1)),
 	}
 
 	rmCmd.Flags().BoolP("delete", "d", false, "delete existing directory")
@@ -24,13 +23,10 @@ func createRemoveCommand() *cobra.Command {
 	return rmCmd
 }
 
-func wrapRemoveSubmodule(cmd *cobra.Command, args []string) {
+func wrapRemoveSubmodule(cmd *cobra.Command, args []string) error {
 	deleteDirectory, _ := cmd.Flags().GetBool("delete")
 	forceDelete, _ := cmd.Flags().GetBool("force")
-	err := removeSubmodule(models.Path(args[0]), deleteDirectory, forceDelete)
-	if err != nil {
-		fmt.Printf("error: %s\n", err)
-	}
+	return removeSubmodule(models.Path(args[0]), deleteDirectory, forceDelete)
 }
 
 func removeSubmodule(p models.Path, deleteDirectory bool, forceDelete bool) error {
