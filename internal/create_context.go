@@ -73,7 +73,7 @@ func CreateContext(p models.Path) (models.NestContext, error) {
 		IsGitInstalled = true
 
 		gitRoot = models.Path(gitRootStr)
-		if gitRoot == projectRoot {
+		if gitRoot.Equals(projectRoot) {
 			isGitProject = true
 		} else if !nestConfig.Config.AllowUnequalRoots {
 			_, _ = fmt.Fprintf(os.Stderr, "git-nest root and git repository root directories do not match: %s != %s\n", gitRoot.String(), projectRoot.String())

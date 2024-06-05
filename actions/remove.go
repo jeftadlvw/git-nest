@@ -33,12 +33,12 @@ func RemoveSubmoduleFromContext(context *models.NestContext, p models.Path, remo
 	}
 
 	absolutePath := context.ProjectRoot.Join(relativeToRoot)
-	if absolutePath == context.ProjectRoot {
+	if absolutePath.Equals(context.ProjectRoot) {
 		return nil, fmt.Errorf("validation error: path cannot be project root")
 	}
 
 	// check if passed submodule exists in context
-	var removeIndex int = -1
+	var removeIndex = -1
 	for i, submodule := range context.Config.Submodules {
 		if submodule.Path.String() == relativeToRoot.String() {
 			removeIndex = i
