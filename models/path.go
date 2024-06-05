@@ -158,6 +158,39 @@ func (p *Path) BContains(pattern string) bool {
 }
 
 /*
+Equals returns whether this and another path are the same
+*/
+func (p *Path) Equals(other Path) bool {
+
+	pLocal, otherLocal := p.Clean(), other.Clean()
+
+	// lowercase the strings and compare them
+	thisLowerCase := strings.ToLower(string(pLocal))
+	otherLowerCase := strings.ToLower(string(otherLocal))
+
+	// if not equal in lowercase, then they are not the same path
+	if thisLowerCase != otherLowerCase {
+		return false
+	}
+
+	// if equal in lowercase, proceed to check if path is on a
+	// case-sensitive filesystem or not
+	caseSensitive, err := IsOnCaseSensitiveFilesystem(pLocal)
+	if err != nil {
+		// return false in case of an error
+		return false
+	}
+
+	// if case-sensitive, compare both original strings
+	if caseSensitive {
+		return pLocal == otherLocal
+	}
+
+	// if case-insensitive, return true
+	return true
+}
+
+/*
 String returns this Path as its base type, removing the need for specific casts.
 */
 func (p *Path) String() string {
@@ -197,6 +230,33 @@ func (p *Path) MarshalText() (text []byte, err error) {
 	return []byte(*p), nil
 }
 
+/*
+IsOnCaseSensitiveFilesystem returns whether a given path is on a case-sensitive filesystem.
+*/
+func IsOnCaseSensitiveFilesystem(p Path) (bool, error) {
+	alt := p.Parent()
+	alt = alt.SJoin(flipCase(p.Base()))
+
+	// get file stat for passed file
+	pathInfo, err := os.Stat(string(p))
+	if err != nil {
+		return false, err
+	}
+
+	// if file does not exist, assume to be on case-sensitive filesystem
+	altInfo, err := os.Stat(string(alt))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return true, nil
+		}
+
+		return false, err
+	}
+
+	// if both file exist, check if they are the same
+	return !os.SameFile(pathInfo, altInfo), nil
+}
+
 func pathCheck(p Path) int {
 	fileInfo, err := os.Stat(string(p))
 	if err != nil {
@@ -214,4 +274,15 @@ func pathCheck(p Path) int {
 	}
 
 	return FILE
+}
+
+func flipCase(s string) string {
+	if s == "" {
+		return s
+	}
+	firstChar := string(s[0])
+	if strings.ToLower(firstChar) == firstChar {
+		return strings.ToUpper(firstChar) + s[1:]
+	}
+	return strings.ToLower(firstChar) + s[1:]
 }
