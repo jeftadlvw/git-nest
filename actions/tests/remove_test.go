@@ -135,6 +135,12 @@ func TestRemoveSubmoduleFromContext(t *testing.T) {
 
 			// remove submodule
 			migrationArr, err := actions.RemoveSubmoduleFromContext(&context, p, tc.removeNonEmptyDir, tc.forceDelete)
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
 
 			// check migration array
 			if !tc.err && len(tc.expectedMigrations) != len(migrationArr) {
@@ -151,14 +157,14 @@ func TestRemoveSubmoduleFromContext(t *testing.T) {
 			// run migrations if action function call did not return an error
 			if err == nil {
 				err = migrations.RunMigrations(migrationArr...)
-			}
 
-			// test for errors
-			if tc.err && err == nil {
-				t.Fatalf("no error, but expected one")
-			}
-			if !tc.err && err != nil {
-				t.Fatalf("unexpected error: %s", err)
+				// test for errors
+				if tc.err && err == nil {
+					t.Fatalf("no error, but expected one")
+				}
+				if !tc.err && err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
 			}
 		})
 	}
