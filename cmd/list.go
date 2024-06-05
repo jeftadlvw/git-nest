@@ -36,9 +36,9 @@ func printSubmodules() {
 	submodulesExist := internal.SubmodulesExist(context.Config.Submodules, context.ProjectRoot)
 
 	buffer := bytes.NewBufferString("")
-	tabWriter := tabwriter.NewWriter(buffer, 5, 0, 0, '.', tabwriter.TabIndent)
+	tabWriter := tabwriter.NewWriter(buffer, 5, 0, 1, ' ', tabwriter.TabIndent)
 
-	_, _ = fmt.Fprintf(tabWriter, "i\tpath\torigin\tref\tstatus")
+	_, _ = fmt.Fprintf(tabWriter, "i\tpath\torigin\tref\tstatus\n")
 	for index, submodule := range context.Config.Submodules {
 		submoduleExists := submodulesExist[index]
 		existStr, err := internal.FmtSubmoduleExistOutput(submoduleExists.Status, submoduleExists.Payload, submoduleExists.Error)
@@ -46,7 +46,7 @@ func printSubmodules() {
 			existStr = "internal error: " + err.Error()
 		}
 
-		_, _ = fmt.Fprintf(tabWriter, "%d\t%s\t%s\t%s\t%s", index+1, submodule.Path, submodule.Url.String(), submodule.Ref, existStr)
+		_, _ = fmt.Fprintf(tabWriter, "%d\t%s\t%s\t%s\t%s\n", index+1, submodule.Path, submodule.Url.String(), submodule.Ref, existStr)
 	}
 	_ = tabWriter.Flush()
 
