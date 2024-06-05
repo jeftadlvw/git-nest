@@ -75,6 +75,7 @@ func runCommand(fStdout func(string), fStderr func(string), wd models.Path, comm
 
 	// configure command
 	cmd := exec.Command(command, args...)
+	addEnglishLocaleEnv(cmd)
 	if !wd.Empty() {
 		cmd.Dir = wd.String()
 	}
@@ -152,4 +153,12 @@ func scanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	}
 	// Request more data.
 	return 0, nil, nil
+}
+
+/*
+addEnglishLocaleEnv adds an environment variables that causes some programs to force their output language to english.
+Works on unix only, but is added for every platform.
+*/
+func addEnglishLocaleEnv(cmd *exec.Cmd) {
+	cmd.Env = append(cmd.Env, "LANGUAGE=en_US.UTF-8")
 }
