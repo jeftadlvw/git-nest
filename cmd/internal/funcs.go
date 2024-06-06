@@ -29,7 +29,9 @@ func RunWrapper(run func(cmd *cobra.Command, args []string) error, validateArgCo
 		if validateArgCount != nil {
 			for _, validationFunc := range validateArgCount {
 				err := validationFunc(len(args))
-				return fmt.Errorf("argument count error: %s\n", err)
+				if err != nil {
+					return fmt.Errorf("argument count error: %s\n", err)
+				}
 			}
 		}
 
