@@ -43,10 +43,9 @@ func (m Clone) Migrate() error {
 			}
 
 			liveOutputFunc = func(line string) {
-
 				// shorten string and add ellipsis if it's shorter than the terminal width
 				if len(line) > terminalWidth {
-					line = line[:terminalWidth-6] + "..."
+					line = line[:utils.MaxInt(0, terminalWidth-6)] + "..."
 				}
 
 				_, _ = fmt.Fprintf(os.Stderr, "\r%*s", -terminalWidth, line)
