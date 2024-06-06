@@ -14,46 +14,38 @@ import (
 RunCommand is a subset-wrapper for exec.Command, providing separate return values for stdout and stderr.
 */
 func RunCommand(d models.Path, command string, args ...string) (string, string, error) {
-	var stdout strings.Builder
-	var stderr strings.Builder
+	cmd := constructCommand(d, command, args...)
 
-	generateStringBuildFunc := func(sb *strings.Builder) func(s string) {
-		return func(s string) {
-			sb.WriteString(s + "\n")
-		}
-	}
+	var errBuf bytes.Buffer
+	cmd.Stderr = &errBuf
 
-	err := RunCommandLiveOutput(generateStringBuildFunc(&stdout), generateStringBuildFunc(&stderr), d, command, args...)
+	stdout, err := cmd.Output()
 	if err != nil {
 		return "", "", err
 	}
 
-	return strings.TrimSpace(stdout.String()), strings.TrimSpace(stderr.String()), err
+	return strings.TrimSpace(string(stdout)), strings.TrimSpace(errBuf.String()), err
 }
 
 /*
 RunCommandCombinedOutput is a subset-wrapper for exec.Command, returning both stdout and stderr in one string.
 */
 func RunCommandCombinedOutput(d models.Path, command string, args ...string) (string, error) {
-	var stdout strings.Builder
+	cmd := constructCommand(d, command, args...)
 
-	fStdout := func(s string) {
-		stdout.WriteString(s + "\n")
-	}
-
-	err := RunCommandLiveOutputCombinedOutput(fStdout, d, command, args...)
+	stdout, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", err
 	}
 
-	return strings.TrimSpace(stdout.String()), err
+	return strings.TrimSpace(string(stdout)), err
 }
 
 /*
 RunCommandLiveOutput is a wrapper for exec.Command that takes a callback function for updates in both stdout and stderr streams.
 */
 func RunCommandLiveOutput(fStdout func(string), fStderr func(string), wd models.Path, command string, args ...string) error {
-	return runCommand(fStdout, fStderr, wd, command, args...)
+	return runCommandLive(fStdout, fStderr, wd, command, args...)
 }
 
 /*
@@ -68,17 +60,23 @@ func RunCommandLiveOutputCombinedOutput(fStdout func(string), wd models.Path, co
 		mutex.Unlock()
 	}
 
-	return runCommand(fStdoutWrapper, fStdoutWrapper, wd, command, args...)
+	return runCommandLive(fStdoutWrapper, fStdoutWrapper, wd, command, args...)
 }
 
-func runCommand(fStdout func(string), fStderr func(string), wd models.Path, command string, args ...string) error {
-
-	// configure command
+func constructCommand(wd models.Path, command string, args ...string) exec.Cmd {
 	cmd := exec.Command(command, args...)
 	addEnglishLocaleEnv(cmd)
 	if !wd.Empty() {
 		cmd.Dir = wd.String()
 	}
+
+	return *cmd
+}
+
+func runCommandLive(fStdout func(string), fStderr func(string), wd models.Path, command string, args ...string) error {
+
+	// configure command
+	cmd := constructCommand(wd, command, args...)
 
 	// obtain pipes
 	stdoutPipe, err := cmd.StdoutPipe()
