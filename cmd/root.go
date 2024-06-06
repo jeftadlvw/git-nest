@@ -20,6 +20,7 @@ in your project without your parent repository noticing, using native features
 and configurations files.`,
 		RunE:          internal.PrintUsage,
 		SilenceErrors: true,
+		SilenceUsage:  true,
 	}
 
 	configureRootCommand(rootCmd)
