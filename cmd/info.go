@@ -85,7 +85,7 @@ func printDebugInformation(redact bool) error {
 	}
 
 	for _, validNestedModule := range internal.SubmodulesExist(context.Config.Submodules, context.ProjectRoot) {
-		if validNestedModule.Status == internal.SUBMODULE_EXISTS_OK {
+		if validNestedModule.Status == internal.SUBMODULE_EXISTS_OK || validNestedModule.Status == internal.SUBMODULE_EXISTS_UNDEFINED_REF {
 			validNestedModules++
 		}
 	}
