@@ -55,7 +55,7 @@ func (m Clone) Migrate() error {
 
 	err := utils.CloneGitRepository(m.Url.String(), m.Path, m.CloneDirName, liveOutputFunc)
 
-	if term.IsTerminal(terminalFd) {
+	if liveOutputFunc != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "\r%*s", -terminalWidth, "")
 		_, _ = fmt.Fprintf(os.Stderr, "\r")
 	}
