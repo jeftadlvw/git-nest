@@ -38,7 +38,7 @@ func printDebugInformation(redact bool) error {
 	workingDir := context.WorkingDirectory.String()
 	rootDir := context.ProjectRoot.String()
 	repositoryRoot := context.GitRepositoryRoot.String()
-	validNestedModules := 0
+	validNestedModules := internal.ValidSubmodulesCount(context.Config.Submodules, context.ProjectRoot)
 
 	// beautify compilation time output
 	compilationTime := "unknown"
@@ -82,12 +82,6 @@ func printDebugInformation(redact bool) error {
 		}
 
 		workingDir = "."
-	}
-
-	for _, validNestedModule := range internal.SubmodulesExist(context.Config.Submodules, context.ProjectRoot) {
-		if validNestedModule.Status == internal.SUBMODULE_EXISTS_OK || validNestedModule.Status == internal.SUBMODULE_EXISTS_UNDEFINED_REF {
-			validNestedModules++
-		}
 	}
 
 	infoMap := []utils.Node{

@@ -95,7 +95,36 @@ func SubmodulesExist(submodules []models.Submodule, root models.Path) []Submodul
 	}
 
 	return existMapping
+}
 
+/*
+SubmoduleValid takes multiple submodules and verifies their existence in bulk
+*/
+func SubmoduleValid(submodule models.Submodule, root models.Path) bool {
+	status, _, _ := SubmoduleExists(submodule, root)
+	return SubmoduleStatusValid(status)
+}
+
+/*
+ValidSubmodulesCount how many passed submodules are valid.
+*/
+func ValidSubmodulesCount(submodules []models.Submodule, root models.Path) int {
+	valid := 0
+
+	for _, submodule := range submodules {
+		if SubmoduleValid(submodule, root) {
+			valid++
+		}
+	}
+
+	return valid
+}
+
+/*
+SubmoduleStatusValid returns if a status belongs to being valid
+*/
+func SubmoduleStatusValid(status int) bool {
+	return status == SUBMODULE_EXISTS_OK || status == SUBMODULE_EXISTS_UNDEFINED_REF
 }
 
 func FmtSubmoduleExistOutput(status int, payload string, err error) (string, error) {

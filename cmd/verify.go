@@ -36,7 +36,7 @@ func verifyConfigAndSubmodules() error {
 			existStr = "internal error: " + err.Error()
 		}
 
-		if submoduleExists.Status != internal.SUBMODULE_EXISTS_OK && submoduleExists.Status != internal.SUBMODULE_EXISTS_UNDEFINED_REF {
+		if internal.SubmoduleStatusValid(submoduleExists.Status) {
 			fmt.Printf("error for nested module at index %d: %s\n", index, existStr)
 		}
 	}
