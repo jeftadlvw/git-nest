@@ -30,7 +30,7 @@ func printSubmodules() error {
 	}
 
 	if len(context.Config.Submodules) == 0 {
-		fmt.Println("no nested modules defined in current context")
+		fmt.Println(cmdInternal.NoNestedModulesMsg)
 		return nil
 	}
 

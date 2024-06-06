@@ -3,16 +3,19 @@ package cmd
 import (
 	"fmt"
 	"github.com/jeftadlvw/git-nest/actions"
-	"github.com/jeftadlvw/git-nest/cmd/internal"
+	cmdInternal "github.com/jeftadlvw/git-nest/cmd/internal"
 	"github.com/jeftadlvw/git-nest/migrations"
 	mcontext "github.com/jeftadlvw/git-nest/migrations/context"
 	"github.com/spf13/cobra"
 )
 
-var syncCmd = &cobra.Command{
-	Use:   "sync",
-	Short: fmt.Sprintf("Update and apply state changes"),
-	RunE:  internal.RunWrapper(wrapSync),
+func createSyncCommand() *cobra.Command {
+	var syncCmd = &cobra.Command{
+		Use:   "sync",
+		Short: fmt.Sprintf("Update and apply state changes"),
+		RunE:  cmdInternal.RunWrapper(wrapSync),
+	}
+	return syncCmd
 }
 
 func wrapSync(cmd *cobra.Command, args []string) error {
@@ -21,9 +24,14 @@ func wrapSync(cmd *cobra.Command, args []string) error {
 
 func sync() error {
 	// read context
-	context, err := internal.ErrorWrappedEvaluateContext()
+	context, err := cmdInternal.ErrorWrappedEvaluateContext()
 	if err != nil {
 		return err
+	}
+
+	if len(context.Config.Submodules) == 0 {
+		fmt.Println(cmdInternal.NoNestedModulesMsg)
+		return nil
 	}
 
 	actionMigrations, err := actions.SynchronizeConfigAndModules(&context)
