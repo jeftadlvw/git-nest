@@ -8,6 +8,8 @@ import (
 	"github.com/jeftadlvw/git-nest/utils"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -104,6 +106,119 @@ func TestGitCheckout(t *testing.T) {
 			}
 
 			err := utils.GitCheckout(repoDir, tc.ref)
+			if tc.err && err == nil {
+				t.Fatalf("no error, but expected one")
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+		})
+	}
+}
+
+func TestGitPull(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		pullMode   int // 1: merge, 2: rebase, 3: fast-forward
+		createFile bool
+		commitFile bool
+		err        bool
+	}{
+		{1, false, false, false},
+		{2, false, false, false},
+		{3, false, false, false},
+		{1, true, false, true},
+		{2, true, false, true},
+		{3, true, false, true},
+		{1, true, true, true},
+		{2, true, true, true},
+		{3, true, true, true},
+	}
+
+	for index, tc := range cases {
+		t.Run(fmt.Sprintf("TestGitPull-%d", index+1), func(t *testing.T) {
+			t.Parallel()
+
+			tempDir := models.Path(t.TempDir())
+			err := test_env.CreateTestEnvironment(tempDir, test_env_models.EnvSettings{Origin: test_env.RepoUrl, CloneDir: "temp"})
+			if err != nil {
+				t.Fatalf("error creating test environment: %s", err)
+				return
+			}
+			repoDir := tempDir.SJoin("temp")
+
+			// checkout first commit
+			output, err := utils.RunCommandCombinedOutput(repoDir, "git", "rev-list", "--count", "HEAD")
+			if err != nil {
+				t.Fatalf("unable to get amount of commits: %s", err)
+			}
+			commitCount, err := strconv.Atoi(strings.TrimSpace(output))
+			if err != nil {
+				t.Fatalf("unable to parse commit count: %s", err)
+			}
+			_, err = utils.RunCommandCombinedOutput(repoDir, "git", "reset", "--hard", fmt.Sprintf("HEAD~%d", commitCount-1))
+			if err != nil {
+				t.Fatalf("unable to hard reset repository: %s", err)
+			}
+
+			// set pull mode
+			switch tc.pullMode {
+			case 1:
+				_, err = utils.RunCommandCombinedOutput(repoDir, "git", "config", "pull.rebase", "false")
+				if err != nil {
+					t.Fatalf("unable to set pull mode to pull.rebase::true: %s", err)
+				}
+			case 2:
+				_, err = utils.RunCommandCombinedOutput(repoDir, "git", "config", "pull.rebase", "true")
+				if err != nil {
+					t.Fatalf("unable to set pull mode to pull.rebase::false: %s", err)
+				}
+			case 3:
+				_, err = utils.RunCommandCombinedOutput(repoDir, "git", "config", "pull.ff", "only")
+				if err != nil {
+					t.Fatalf("unable to set pull mode to pull.ff::only: %s", err)
+				}
+			}
+
+			if tc.createFile {
+				err = utils.WriteStrToFile(repoDir.SJoin("LICENSE"), "Foo")
+				if err != nil {
+					t.Fatalf("unable to create file: %s", err)
+				}
+
+				if tc.commitFile {
+					// set mock user and email
+					_, err = utils.RunCommandCombinedOutput(repoDir, "git", "config", "user.name", "foo")
+					if err != nil {
+						t.Fatalf("unable to set git user: %s", err)
+					}
+					_, err = utils.RunCommandCombinedOutput(repoDir, "git", "config", "user.email", "foo")
+					if err != nil {
+						t.Fatalf("unable to set git email: %s", err)
+					}
+
+					// git add file
+					err = utils.WriteStrToFile(repoDir.SJoin("LICENCE"), "")
+					if err != nil {
+						t.Fatalf("unable to create file: %s", err)
+					}
+
+					// git commit file
+					_, err = utils.RunCommandCombinedOutput(repoDir, "git", "add", ".")
+					if err != nil {
+						t.Fatalf("unable to add file: %s", err)
+					}
+					_, err = utils.RunCommandCombinedOutput(repoDir, "git", "commit", "-m", "\"foo\"")
+					if err != nil {
+						t.Fatalf("unable to commit file: %s", err)
+					}
+				}
+			}
+
+			err = nil
+
+			err = utils.GitPull(repoDir, nil)
 			if tc.err && err == nil {
 				t.Fatalf("no error, but expected one")
 			}
