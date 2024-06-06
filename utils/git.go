@@ -126,16 +126,16 @@ func GetGitRemoteUrl(d models.Path) (string, error) {
 		return "", errors.New("path to repository may not be empty")
 	}
 
-	path, err := RunCommandCombinedOutput(d, "git", "config", "--get", "remote.origin.url")
+	remoteUrl, err := RunCommandCombinedOutput(d, "git", "config", "--get", "remote.origin.url")
 	if err != nil {
-		return "", fmt.Errorf("error running git config: %w; output: %s", err, path)
+		return "", fmt.Errorf("error running git config: %w; output: %s", err, remoteUrl)
 	}
 
-	if strings.HasPrefix(path, "fatal:") {
+	if strings.HasPrefix(remoteUrl, "fatal:") {
 		return "", errors.New("git root not found")
 	}
 
-	return path, nil
+	return remoteUrl, nil
 }
 
 /*
