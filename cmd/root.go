@@ -43,13 +43,19 @@ and configurations files.`,
 
 func configureRootCommand(rootCmd *cobra.Command) {
 	// add subcommands
+	// informative
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(createInfoCmd())
+	rootCmd.AddCommand(createVerifyCmd())
+
+	// manage modules
 	rootCmd.AddCommand(createAddCmd())
 	rootCmd.AddCommand(createRemoveCommand())
 	rootCmd.AddCommand(createListCmd())
-	rootCmd.AddCommand(createVerifyCmd())
-	rootCmd.AddCommand(syncCmd)
+
+	// housekeeping
+	rootCmd.AddCommand(createSyncCommand())
+	rootCmd.AddCommand(createPullCommand())
 
 	// miscellaneous configuration
 	rootCmd.CompletionOptions.DisableDefaultCmd = true

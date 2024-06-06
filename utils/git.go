@@ -99,6 +99,70 @@ func GitCheckout(repository models.Path, ref string) error {
 }
 
 /*
+GitPull changes a local repository's HEAD.
+*/
+func GitPull(repository models.Path, liveOutput func(string)) error {
+	if repository.Empty() {
+		return errors.New("empty repository value")
+	}
+
+	if !repository.Exists() {
+		return fmt.Errorf("%s does not exist", repository)
+	}
+
+	if !repository.IsDir() {
+		return fmt.Errorf("%s is not a directory", repository)
+	}
+
+	outputBuilder := strings.Builder{}
+	liveOutputFunc := func(line string) {
+		outputBuilder.WriteString(line + "\n")
+
+		if liveOutput != nil {
+			liveOutput(line)
+		}
+	}
+
+	err := RunCommandLiveOutputCombinedOutput(liveOutputFunc, repository, "git", "pull", "--progress")
+	output := outputBuilder.String()
+
+	if strings.Contains(output, "fatal: not a git repository") {
+		return fmt.Errorf("%s is not a git repository", repository)
+	}
+
+	if strings.Contains(output, "There is no tracking information for the current branch.") {
+		return fmt.Errorf("repository has no configured remote")
+	}
+
+	if strings.Contains(output, "error: The following untracked working tree files would be overwritten by merge:") {
+		return fmt.Errorf("repository contains untracked contents")
+	}
+
+	if strings.Contains(output, "fatal: Need to specify how to reconcile divergent branches.") {
+		return fmt.Errorf("repository does not know how to merge")
+	}
+
+	if strings.Contains(output, "fatal: Not possible to fast-forward, aborting") {
+		return fmt.Errorf("unable to fast-forward")
+	}
+
+	if strings.Contains(output, "Merge conflict") {
+		abortOutput, abortErr := RunCommandCombinedOutput(repository, "git", "merge", "--abort")
+		if abortErr != nil {
+			return fmt.Errorf("error aborting merge: %w; output: %s", abortErr, abortOutput)
+		}
+
+		return fmt.Errorf("pull would cause merge conflict")
+	}
+
+	if err != nil {
+		return fmt.Errorf("error running git checkout: %w; output: %s", err, output)
+	}
+
+	return nil
+}
+
+/*
 GetGitRootDirectory retrieves the root of a git directory tree.
 */
 func GetGitRootDirectory(d models.Path) (string, error) {

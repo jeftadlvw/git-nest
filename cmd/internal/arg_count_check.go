@@ -1,8 +1,19 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 )
+
+func ArgNone() func(c int) error {
+	return func(c int) error {
+		if c != 0 {
+			return errors.New("no extra arguments defined")
+		}
+
+		return nil
+	}
+}
 
 func ArgExactN(n int) func(c int) error {
 	return func(c int) error {
