@@ -5,6 +5,10 @@
 > [!IMPORTANT]
 > This project is in early development. Source code may be unstable and documentation inaccurate. Proceed and use with caution. Feel free to open an issue!
 
+> [!NOTE]
+> I need to put my time and effort into uni projects. This project is not abandoned, but it'll rest for a little bit. Critical bugs for the latest release will be considered, features and other improvements need to wait. Thank you for your patience!
+
+
 ## Installation
 
 UNIX-based operating systems:
