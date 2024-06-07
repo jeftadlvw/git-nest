@@ -118,6 +118,7 @@ Available Commands:
   help        Help about any command
   info        Print various debug information
   list        List nested modules
+  pull        Pull new updates in all nested modules
   remove      Remove a submodule from this project
   sync        Update and apply state changes
   verify      Verify configuration and nested modules
