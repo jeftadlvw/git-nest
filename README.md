@@ -37,7 +37,7 @@ You should have the following requirements installed into your local environment
 * supported version of the Go toolchain (see [Supported go versions](#supported-go-versions))
 * GNU make
 
-`nix-shell`, `devbox shell` and ~~Docker~~ (not yet) are supported out-of-the-box too. More about the dependencies and shell environments can be found in [Development](#development).
+`nix-shell`, `devbox shell` are supported development environments too. More about the dependencies and shell environments can be found in [Development](#development). There also is a Docker image that spins up a [testing environment](#temporary-testing-environment) with automatic code building and other tools.
 
 The building procedure is defined as a Makefile target.
 
