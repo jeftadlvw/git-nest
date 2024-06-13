@@ -38,7 +38,7 @@ if (-not (Test-Path -Path $installDir)) {
 }
 
 # download binary to the installation directory
-$downloadUrl = "$repository/releases/download/$latestTag/git-nest_windows-$arch"
+$downloadUrl = "$repository/releases/download/$latestTag/git-nest_windows-$arch.exe"
 $downloadPath = "$installDir\$binaryName"
 Write-Host "Downloading from $downloadUrl"
 
